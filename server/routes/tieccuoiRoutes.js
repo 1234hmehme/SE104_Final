@@ -81,7 +81,9 @@ router.put('/:id', async (req, res) => {
 
       const tienCoc = updated.TIENCOC;
       // Gốc là 10x tiền cọc, sau đó cộng phạt % theo số ngày trễ
-      const multiplier = 1 + (daysLate-1) / 100;
+  const multiplier = daysLate === 0
+    ? 1
+    : 1 + (daysLate - 1) / 100;
       const tienPhaiTra = tienCoc * 10 * multiplier;
 
       await Hoadon.findOneAndUpdate(

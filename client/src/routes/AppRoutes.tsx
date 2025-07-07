@@ -5,7 +5,7 @@ import Schedule from "../pages/Schedule/Schedule";
 import Food from "../pages/Food/Food";
 import Service from "../pages/Service/Service";
 import Report from "../pages/Report/Report";
-import Settings from "../pages/Settings/Settings.tsx";
+
 import Login from "../pages/Login/Login.tsx"
 import Register from "../pages/Login/Register.tsx"
 import PartyBooking from "../pages/PartyBooking/PartyBooking.tsx";
@@ -42,14 +42,7 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/cai-dat"
-        element={
-          <ProtectedRoute allow="Admin">
-            <Settings />
-          </ProtectedRoute>
-        }
-      />
+    
 
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

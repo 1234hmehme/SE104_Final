@@ -52,7 +52,7 @@ export default function Food() {
                     else if (ten.includes("súp cua")) image = "https://th.bing.com/th/id/R.24bd211cb81ef9181c85ce042810bc65?rik=9AG5Q4yxZUqRvw&riu=http%3a%2f%2fcookingislikelove.com%2fwp%2fwp-content%2fuploads%2f2016%2f07%2feggdropsoup-768x768.jpg&ehk=zr%2bbLQv2WrO4Usf8y6CTn3BvOIt0f2iyMSsKm8zDrfs%3d&risl=&pid=ImgRaw&r=0";
                     else if (ten.includes("súp hải sản")) image = "https://legiaseafood.com/uploads/product/full_xjske3jp7n3luzy-566-sup-hai-san.jpg";
                     else if (ten.includes("súp yến")) image = "https://nunest.vn/wp-content/uploads/2022/04/sup-to-yen-thit-ga.jpg";
-                    else if (ten.includes("gà nướng muối ớt")) image = "https://vinmec-prod.s3.amazonaws.com/returns/20210602_135237_351289_ga-nuong-muoi-ot.max-1800x1800.png";
+                    else if (ten.includes("gà nướng muối ớt")) image = "https://assets.unileversolutions.com/recipes-v2/157827.jpg";
 
                     else if (ten.includes("tôm hùm hấp bia")) image = "https://tse2.mm.bing.net/th/id/OIP.x-Borxiys_DgAY9CnEdqAQHaHa?rs=1&pid=ImgDetMain";
                     else if (ten.includes("cá chẽm hấp xì dầu")) image = "https://bing.com/th?id=OSK.7e2c4e13ccaa609493060872e6dcab5b";

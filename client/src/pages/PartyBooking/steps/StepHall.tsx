@@ -59,7 +59,7 @@ const NullHall = {
 };
 
 export default function StepHall() {
-    const { watch, setValue, control, register, formState: { errors } ,setError, clearErrors} = useFormContext();
+    const { watch, setValue, control, register, formState: { errors }, setError, clearErrors } = useFormContext();
     const [searchKey, setSearchKey] = useState("");
     const [isDetailMenuOpen, setIsDetailMenuOpen] = useState(false);
     const [halls, setHalls] = useState<any[]>([]);
@@ -68,32 +68,32 @@ export default function StepHall() {
 
     const selectedDate = watch("date");
     const selectedShift = watch("shift");
-        
-      // Kiểm tra nếu ngày và ca đã được chọn
-      
-useEffect(() => {
-  if (selectedDate && selectedShift) {
-    fetch("http://localhost:3000/api/tieccuoi")
-      .then(r => r.json())
-      .then((list: any[]) => {
-        console.log("Tất cả tiệc:", list);
-        // chỉ lấy những tiệc có cùng ngày & ca
-        const booked = list
-          .filter(x => dayjs(x.NGAYDAI).format("YYYY-MM-DD") === dayjs(selectedDate).format("YYYY-MM-DD") && x.CA === selectedShift)
-          .map(x => x.MASANH);
 
-    
-        console.log(
-          `Booked halls on ${selectedDate} (${selectedShift}):`,
-          booked
-        );
-        setBookedHallIds(booked);
-      });
-  } else {
-    setBookedHallIds([]);
-  }
-}, [selectedDate, selectedShift]);
-  
+    // Kiểm tra nếu ngày và ca đã được chọn
+
+    useEffect(() => {
+        if (selectedDate && selectedShift) {
+            fetch("http://localhost:3000/api/tieccuoi")
+                .then(r => r.json())
+                .then((list: any[]) => {
+                    console.log("Tất cả tiệc:", list);
+                    // chỉ lấy những tiệc có cùng ngày & ca
+                    const booked = list
+                        .filter(x => dayjs(x.NGAYDAI).format("YYYY-MM-DD") === dayjs(selectedDate).format("YYYY-MM-DD") && x.CA === selectedShift)
+                        .map(x => x.MASANH);
+
+
+                    console.log(
+                        `Booked halls on ${selectedDate} (${selectedShift}):`,
+                        booked
+                    );
+                    setBookedHallIds(booked);
+                });
+        } else {
+            setBookedHallIds([]);
+        }
+    }, [selectedDate, selectedShift]);
+
     // Fetch halls từ backend và gán ảnh minh họa ở FE
     useEffect(() => {
         fetch("http://localhost:3000/api/sanh")
@@ -134,155 +134,155 @@ useEffect(() => {
         <Box sx={{
             display: 'flex', gap: '20px', height: '100%'
         }}>
-    
-        <Controller
-          name="hall"
-          control={control}
-          defaultValue={null}
-          rules={{ required: "Vui lòng chọn một sảnh" }}
-          render={({ field }) => (
-            totalTables > 0 && selectedDate && selectedShift ? (
-                <Box sx={{
-                    flex: 1,
-                    overflowY: 'auto',
-                    pr: 1,
-                }}>
-                    <Box sx={{
-                        display: 'grid',
-                        gridTemplateColumns: {
-                            xs: 'repeat(1, 1fr)',
-                            sm: 'repeat(2, 1fr)',
-                            md: 'repeat(3, 1fr)',
-                        },
-                        rowGap: '20px',
-                        columnGap: { sm: '3%', md: '2%' },
-                        padding: '3px'
-                    }}>
-                        {filteredHalls.map(hall => {
-                            const isBooked = bookedHallIds.includes(hall.id);
-                            return (
-                            <Card
-                                key={hall.id}
-                                onClick={ () => {
-                                                    if (isBooked) {
-                    setError("hall", {
-                      type: "manual",
-                      message: "Sảnh này đã được đặt, vui lòng chọn sảnh khác",
-                    }); 
-                
-                } else{
 
-clearErrors("hall");
-                                    field.onChange(hall);
-                    }
+            <Controller
+                name="hall"
+                control={control}
+                defaultValue={null}
+                rules={{ required: "Vui lòng chọn một sảnh" }}
+                render={({ field }) => (
+                    totalTables > 0 && selectedDate && selectedShift ? (
+                        <Box sx={{
+                            flex: 1,
+                            overflowY: 'auto',
+                            pr: 1,
+                        }}>
+                            <Box sx={{
+                                display: 'grid',
+                                gridTemplateColumns: {
+                                    xs: 'repeat(1, 1fr)',
+                                    sm: 'repeat(2, 1fr)',
+                                    md: 'repeat(3, 1fr)',
+                                },
+                                rowGap: '20px',
+                                columnGap: { sm: '3%', md: '2%' },
+                                padding: '3px'
+                            }}>
+                                {filteredHalls.map(hall => {
+                                    const isBooked = bookedHallIds.includes(hall.id);
+                                    return (
+                                        <Card
+                                            key={hall.id}
+                                            onClick={() => {
+                                                if (isBooked) {
+                                                    setError("hall", {
+                                                        type: "manual",
+                                                        message: "Sảnh này đã được đặt, vui lòng chọn sảnh khác",
+                                                    });
 
-                } }
-                                sx={{
-                                    borderRadius: 3,
-                                    cursor: "pointer",
-                                    border:
-                                        selectedHall?.id === hall.id
-                                            ? "3px solid #4880FF"
-                                            : "1px solid #ccc",
-                                    boxShadow: selectedHall?.id === hall.id ? 4 : 1,
-                                }}
-                            >
-                                <CardMedia
-                                    component="img"
-                                    image={hall.image}
-                                    sx={{
-                                        width: '100%',
-                                        objectFit: 'cover',
-                                        height: 200,
-                                    }}
-                                />
-                                <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                    <Box sx={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                    }}>
-                                        <Typography
-                                            onClick={() => { setIsDetailMenuOpen(true) }}
+                                                } else {
+
+                                                    clearErrors("hall");
+                                                    field.onChange(hall);
+                                                }
+
+                                            }}
                                             sx={{
-                                                fontWeight: 'bold',
-                                                fontSize: '18px',
-                                                '&:hover': {
-                                                    color: '#4880FF',
-                                                },
+                                                borderRadius: 3,
+                                                cursor: "pointer",
+                                                border:
+                                                    selectedHall?.id === hall.id
+                                                        ? "3px solid #4880FF"
+                                                        : "1px solid #ccc",
+                                                boxShadow: selectedHall?.id === hall.id ? 4 : 1,
                                             }}
                                         >
-                                            {hall.name}
-                                        </Typography>
+                                            <CardMedia
+                                                component="img"
+                                                image={hall.image}
+                                                sx={{
+                                                    width: '100%',
+                                                    objectFit: 'cover',
+                                                    height: 200,
+                                                }}
+                                            />
+                                            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    justifyContent: 'space-between',
+                                                    alignItems: 'center',
+                                                }}>
+                                                    <Typography
+                                                        onClick={() => { setIsDetailMenuOpen(true) }}
+                                                        sx={{
+                                                            fontWeight: 'bold',
+                                                            fontSize: '18px',
+                                                            '&:hover': {
+                                                                color: '#4880FF',
+                                                            },
+                                                        }}
+                                                    >
+                                                        {hall.name}
+                                                    </Typography>
 
-                                        <Box sx={{
-                                            display: 'flex',
-                                            width: '25px',
-                                            height: '25px',
-                                            justifyContent: 'center',
-                                            alignItems: 'center',
-                                            borderRadius: 2,
-                                            backgroundColor: defaultBgColorMap[hall.type],
-                                            color: defaultTextColorMap[hall.type],
-                                            fontWeight: 'bold',
-                                            zIndex: 100
-                                        }}>
-                                            {hall.type}
-                                        </Box>
-                                    </Box>
+                                                    <Box sx={{
+                                                        display: 'flex',
+                                                        width: '25px',
+                                                        height: '25px',
+                                                        justifyContent: 'center',
+                                                        alignItems: 'center',
+                                                        borderRadius: 2,
+                                                        backgroundColor: defaultBgColorMap[hall.type],
+                                                        color: defaultTextColorMap[hall.type],
+                                                        fontWeight: 'bold',
+                                                        zIndex: 100
+                                                    }}>
+                                                        {hall.type}
+                                                    </Box>
+                                                </Box>
 
-                                    <Typography sx={{
-                                        display: "-webkit-box",
-                                        WebkitBoxOrient: "vertical",
-                                        overflow: 'hidden',
-                                        WebkitLineClamp: 2,
-                                        color: 'GrayText',
-                                        fontSize: '14px',
-                                        height: '45px',
-                                    }}>
-                                        {hall.description}
-                                    </Typography>
+                                                <Typography sx={{
+                                                    display: "-webkit-box",
+                                                    WebkitBoxOrient: "vertical",
+                                                    overflow: 'hidden',
+                                                    WebkitLineClamp: 2,
+                                                    color: 'GrayText',
+                                                    fontSize: '14px',
+                                                    height: '45px',
+                                                }}>
+                                                    {hall.description}
+                                                </Typography>
 
-                                    <Box sx={{
-                                        display: 'flex',
-                                        flexDirection: 'column',
-                                    }}>
-                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                            <TableRestaurantIcon sx={{ fontSize: '1rem', mr: 0.5, }} />
-                                            <Typography color="text.secondary" fontSize={14}>
-                                                Tối đa: {hall.maxTable} bàn
-                                            </Typography>
-                                        </Box>
+                                                <Box sx={{
+                                                    display: 'flex',
+                                                    flexDirection: 'column',
+                                                }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                        <TableRestaurantIcon sx={{ fontSize: '1rem', mr: 0.5, }} />
+                                                        <Typography color="text.secondary" fontSize={14}>
+                                                            Tối đa: {hall.maxTable} bàn
+                                                        </Typography>
+                                                    </Box>
 
-                                        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                            <TableRestaurantIcon sx={{ fontSize: '1rem', mr: 0.5, }} />
-                                            <Typography color="text.secondary" fontSize={14}>
-                                                Đơn giá bàn tối thiểu: {hall.minTablePrice?.toLocaleString('vi-VN')} VND
-                                            </Typography>
-                                        </Box>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                            )
-                        })}
-                    </Box>
-                </Box>
-            ) :(
-                 <Typography sx={{
-                    display: 'flex',
-                    flex: 1,
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                    color: "gray",
-                }}>
-                    Vui lòng nhập thông tin
-                </Typography>
-            
-            
-        )
-    )}
-    />
- 
+                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                        <TableRestaurantIcon sx={{ fontSize: '1rem', mr: 0.5, }} />
+                                                        <Typography color="text.secondary" fontSize={14}>
+                                                            Đơn giá bàn tối thiểu: {hall.minTablePrice?.toLocaleString('vi-VN')} VND
+                                                        </Typography>
+                                                    </Box>
+                                                </Box>
+                                            </CardContent>
+                                        </Card>
+                                    )
+                                })}
+                            </Box>
+                        </Box>
+                    ) : (
+                        <Typography sx={{
+                            display: 'flex',
+                            flex: 1,
+                            justifyContent: 'center',
+                            alignItems: 'center',
+                            color: "gray",
+                        }}>
+                            Vui lòng nhập thông tin
+                        </Typography>
+
+
+                    )
+                )}
+            />
+
             <Box sx={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -301,31 +301,31 @@ clearErrors("hall");
                     defaultValue=""
                     rules={{ required: "Vui lòng nhập số bàn " }}
                     render={({ field }) => (
-                <Box sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
-                    <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
-                        Số lượng bàn:
-                    </Typography>
-                    <TextField
-                        type="number"
-                        error={!!errors.tables}
-                        sx={{
-                            width: '90px',
-                            "& fieldset": {
-                                borderRadius: "10px",
-                            },
-                            "& .MuiInputBase-input": {
-                                padding: "8px 10px",
-                            },
-                        }}
-                                                        {...field}
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
+                                Số lượng bàn:
+                            </Typography>
+                            <TextField
+                                type="number"
+                                error={!!errors.tables}
+                                sx={{
+                                    width: '90px',
+                                    "& fieldset": {
+                                        borderRadius: "10px",
+                                    },
+                                    "& .MuiInputBase-input": {
+                                        padding: "8px 10px",
+                                    },
+                                }}
+                                {...field}
                                 onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                </Box>
-                            )}
+                            />
+                        </Box>
+                    )}
                 />
 
                 <Controller
@@ -334,32 +334,32 @@ clearErrors("hall");
                     defaultValue=""
                     rules={{ required: "Vui lòng nhập số bàn dự trữ" }}
                     render={({ field }) => (
-                <Box sx={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center'
-                }}>
-                    <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
-                        Số bàn dự trữ:
-                    </Typography>
-                    <TextField
-                        type="number"
+                        <Box sx={{
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                        }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
+                                Số bàn dự trữ:
+                            </Typography>
+                            <TextField
+                                type="number"
 
-                        error={!!errors.reserveTables}
-                        sx={{
-                            width: '90px',
-                            "& fieldset": {
-                                borderRadius: "10px",
-                            },
-                            "& .MuiInputBase-input": {
-                                padding: "8px 10px",
-                            },
-                        }}
-                                                                               {...field}
+                                error={!!errors.reserveTables}
+                                sx={{
+                                    width: '90px',
+                                    "& fieldset": {
+                                        borderRadius: "10px",
+                                    },
+                                    "& .MuiInputBase-input": {
+                                        padding: "8px 10px",
+                                    },
+                                }}
+                                {...field}
                                 onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
-                </Box>
-                                            )}
+                            />
+                        </Box>
+                    )}
                 />
                 <Controller
                     name="shift"
@@ -468,7 +468,7 @@ clearErrors("hall");
                                                     borderRadius: '20px',
                                                 },
                                                 '& .MuiDateCalendar-root': {
-                                                    padding: '18px 20px',
+                                                    padding: '18px 20px 0px 20px',
                                                     gap: '10px',
                                                     maxHeight: '360px',
                                                     height: 'auto',
@@ -496,12 +496,23 @@ clearErrors("hall");
                                                 '& .MuiTypography-root': {
                                                     color: '#454545',
                                                 },
-                                                '& .MuiDayCalendar-slideTransition': {
-                                                    minHeight: 0,
-                                                    marginBottom: '4px'
+                                            },
+                                        },
+                                        day: {
+                                            sx: {
+                                                color: "#8f9091",
+                                                borderRadius: '10px',
+                                                '&:hover': {
+                                                    backgroundColor: '#e3f2fd',
+                                                },
+                                                '&.MuiPickersDay-root.Mui-selected': {
+                                                    backgroundColor: '#4880FF',
+                                                    color: '#fff',
+                                                    '&:hover': {
+                                                        backgroundColor: '#4880FF'
+                                                    }
                                                 },
                                             },
-
                                         },
                                     }}
                                 />
@@ -522,7 +533,7 @@ clearErrors("hall");
                     </Typography>
                 )}
             </Box>
-            
+
 
             <HallDetailMenu
                 open={isDetailMenuOpen}
@@ -530,6 +541,6 @@ clearErrors("hall");
                 initialData={selectedHall}
             />
         </Box>
-        
+
     );
 }

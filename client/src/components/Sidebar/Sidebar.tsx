@@ -30,7 +30,7 @@ export default function Sidebar() {
     { path: 'mon-an', icon: <Utensils size={26} />, label: 'Món ăn' },
     { path: 'dich-vu', icon: <Gift size={26} />, label: 'Dịch vụ' },
     { path: 'bao-cao', icon: <ChartArea size={26} />, label: 'Báo cáo', roles: ['Admin'] },
-    { path: 'cai-dat', icon: <Settings size={26} />, label: 'Cài đặt', roles: ['Admin'] },
+
   ];
 
   const menuItems = rawMenuItems.filter(item =>

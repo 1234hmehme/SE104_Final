@@ -274,7 +274,7 @@ export default function PartyPage() {
                                                 borderRadius: '20px',
                                             },
                                             '& .MuiDateCalendar-root': {
-                                                padding: '18px 20px',
+                                                padding: '18px 20px 0px 20px',
                                                 gap: '10px',
                                                 maxHeight: '360px',
                                                 height: 'auto',
@@ -302,9 +302,22 @@ export default function PartyPage() {
                                             '& .MuiTypography-root': {
                                                 color: '#454545',
                                             },
-                                            '& .MuiDayCalendar-slideTransition': {
-                                                minHeight: 0,
-                                                marginBottom: '4px'
+
+                                        },
+                                    },
+                                    day: {
+                                        sx: {
+                                            color: "#8f9091",
+                                            borderRadius: '10px',
+                                            '&:hover': {
+                                                backgroundColor: '#e3f2fd',
+                                            },
+                                            '&.MuiPickersDay-root.Mui-selected': {
+                                                backgroundColor: '#4880FF',
+                                                color: '#fff',
+                                                '&:hover': {
+                                                    backgroundColor: '#4880FF'
+                                                }
                                             },
                                         },
                                     },
@@ -344,7 +357,7 @@ export default function PartyPage() {
                                                 borderRadius: '20px',
                                             },
                                             '& .MuiDateCalendar-root': {
-                                                padding: '18px 20px',
+                                                padding: '18px 20px 0px 20px',
                                                 gap: '10px',
                                                 maxHeight: '360px',
                                                 height: 'auto',
@@ -372,9 +385,21 @@ export default function PartyPage() {
                                             '& .MuiTypography-root': {
                                                 color: '#454545',
                                             },
-                                            '& .MuiDayCalendar-slideTransition': {
-                                                minHeight: 0,
-                                                marginBottom: '4px'
+                                        },
+                                    },
+                                    day: {
+                                        sx: {
+                                            color: "#8f9091",
+                                            borderRadius: '10px',
+                                            '&:hover': {
+                                                backgroundColor: '#e3f2fd',
+                                            },
+                                            '&.MuiPickersDay-root.Mui-selected': {
+                                                backgroundColor: '#4880FF',
+                                                color: '#fff',
+                                                '&:hover': {
+                                                    backgroundColor: '#4880FF'
+                                                }
                                             },
                                         },
                                     },

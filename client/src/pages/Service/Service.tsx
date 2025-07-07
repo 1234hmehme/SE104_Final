@@ -114,7 +114,8 @@ export default function Service() {
                         category: newService.DANHMUC,
                     }
                 ]);
-            });
+                setOpenAddServiceDialog(false);
+            })
     };
     const handleCloseAddServiceDialog = () => {
         setOpenAddServiceDialog(false);

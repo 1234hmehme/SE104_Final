@@ -201,10 +201,7 @@ export default function Schedule() {
               '& .MuiTypography-root': {
                 color: '#454545',
               },
-              '& .MuiDayCalendar-slideTransition': {
-                minHeight: 0,
-                marginBottom: '4px'
-              },
+
             }}
           >
             <StaticDatePicker
@@ -217,6 +214,21 @@ export default function Schedule() {
               }}
               slotProps={{
                 actionBar: { style: { display: 'none' } },
+                day: {
+                  sx: {
+                    color: "#8f9091",
+                    borderRadius: '10px',
+                    '&:hover': {
+                      backgroundColor: '#e3f2fd',
+                    },
+                    '&.MuiPickersDay-root.Mui-selected': {
+                      backgroundColor: '#4880FF',
+                      '&:hover': {
+                        backgroundColor: '#3578f0'
+                      }
+                    },
+                  },
+                },
               }}
             />
             <Button variant="contained" onClick={() => handleCloseCalendar(true)}

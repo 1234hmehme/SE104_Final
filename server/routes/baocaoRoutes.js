@@ -4,14 +4,19 @@ const Baocao = require('./../models/Baocao')
 
 router.post('/', async (req, res) => {
   try {
-    const data = req.body;
-    const newBaocao = new Baocao(data);
-    const response = await newBaocao.save();
-    console.log('Data saved');
-    res.status(200).json(response); 
+    const { THANG, NAM, DOANHTHU } = req.body;
+
+    const response = await Baocao.findOneAndUpdate(
+      { THANG, NAM },                  // tìm theo tháng và năm
+      { $set: { DOANHTHU } },          // cập nhật doanh thu
+      { upsert: true, new: true }      // nếu chưa có thì tạo mới
+    );
+
+    console.log('Báo cáo đã lưu hoặc cập nhật');
+    res.status(200).json(response);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: 'Internal Server Error', details: err.message }); 
+    res.status(500).json({ error: 'Lỗi khi lưu báo cáo', details: err.message });
   }
 });
 

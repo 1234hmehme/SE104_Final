@@ -1,11 +1,40 @@
 const express = require('express');
 const router = express.Router();
-const Tieccuoi = require('./../models/Tieccuoi')
-const Hoadon = require('./../models/Hoadon')
-const Chitietmonan = require('./../models/Chitietmonan'); // THÊM DÒNG NÀY Ở ĐẦU FILE
+const Tieccuoi = require('./../models/Tieccuoi');
+const Hoadon = require('./../models/Hoadon');
+const Chitietmonan = require('./../models/Chitietmonan');
 const Chitietdichvu = require('../models/Chitietdichvu');
+const Baocao = require('../models/Baocao');
 
+// ✅ Hàm cập nhật hoặc xóa báo cáo tháng
+async function updateMonthlyReport(date) {
+  const d = new Date(date);
+  const month = d.getMonth() + 1;
+  const year = d.getFullYear();
 
+  const invoices = await Hoadon.find({
+    NGAYTHANHTOAN: {
+      $gte: new Date(year, month - 1, 1),
+      $lt: new Date(year, month, 1),
+    },
+  });
+
+  const totalRevenue = invoices.reduce((sum, hoadon) => sum + hoadon.TONGTIEN, 0);
+
+  if (totalRevenue === 0) {
+    await Baocao.findOneAndDelete({ THANG: month, NAM: year });
+    console.log(`🗑️ Xoá báo cáo tháng ${month}/${year} vì doanh thu = 0`);
+  } else {
+    await Baocao.findOneAndUpdate(
+      { THANG: month, NAM: year },
+      { THANG: month, NAM: year, DOANHTHU: totalRevenue },
+      { upsert: true, new: true, runValidators: true }
+    );
+    console.log(`✅ Cập nhật báo cáo tháng ${month}/${year}: ${totalRevenue} VND`);
+  }
+}
+
+// ✅ Tạo tiệc cưới mới
 router.post('/', async (req, res) => {
   try {
     const count = await Tieccuoi.countDocuments();
@@ -13,18 +42,13 @@ router.post('/', async (req, res) => {
 
     const data = req.body;
     const { foods = [], services = [] } = data;
-
     data.MATIEC = newMaTiec;
-    if (!data.TRANGTHAI) {
-      data.TRANGTHAI = 'Đã đặt cọc';
-    }
+    if (!data.TRANGTHAI) data.TRANGTHAI = 'Đã đặt cọc';
 
-    // ✅ Lưu tiệc cưới
     const newTieccuoi = new Tieccuoi(data);
     const savedTieccuoi = await newTieccuoi.save();
-    console.log('✅ Tiệc cưới đã lưu');
 
-    // ✅ Tạo chi tiết món ăn nếu có
+    // Chi tiết món ăn
     if (foods.length > 0) {
       const foodRecords = foods.map(food => ({
         MATIEC: newMaTiec,
@@ -33,10 +57,9 @@ router.post('/', async (req, res) => {
         GHICHU: food.note || ''
       }));
       await Chitietmonan.insertMany(foodRecords);
-      console.log('✅ Đã lưu chi tiết món ăn');
     }
 
-    // ✅ Tạo chi tiết dịch vụ nếu có
+    // Chi tiết dịch vụ
     if (services.length > 0) {
       const serviceRecords = services.map(sv => ({
         MATIEC: newMaTiec,
@@ -46,19 +69,18 @@ router.post('/', async (req, res) => {
         GHICHU: sv.note || ''
       }));
       await Chitietdichvu.insertMany(serviceRecords);
-      console.log('✅ Đã lưu chi tiết dịch vụ');
     }
 
-    // ✅ Tạo hóa đơn
+    // Tạo hóa đơn
     const newHoadon = new Hoadon({
       MATIEC: newMaTiec,
       NGAYTHANHTOAN: data.NGAYDAI,
-      TONGTIEN: data.TRANGTHAI === 'Đã thanh toán'
-        ? data.TIENCOC * 10
-        : data.TIENCOC,
+      TONGTIEN: data.TRANGTHAI === 'Đã thanh toán' ? data.TIENCOC * 10 : data.TIENCOC,
     });
     await newHoadon.save();
-    console.log('✅ Hóa đơn đã tạo');
+
+    // Cập nhật báo cáo tháng
+    await updateMonthlyReport(data.NGAYDAI);
 
     res.status(200).json(savedTieccuoi);
   } catch (err) {
@@ -67,98 +89,70 @@ router.post('/', async (req, res) => {
   }
 });
 
-
-
-
+// ✅ Lấy danh sách tiệc cưới
 router.get('/', async (req, res) => {
   try {
-    const data = await Tieccuoi.find(); 
-    console.log('Data fetched',data);
-    res.status(200).json(data); 
+    const data = await Tieccuoi.find();
+    res.status(200).json(data);
   } catch (err) {
-    console.log(err);
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 });
 
-
+// ✅ Cập nhật tiệc cưới
 router.put('/:id', async (req, res) => {
   try {
     const tieccuoiId = req.params.id;
-    const updatedTieccuoiData = req.body;
+    const updatedData = req.body;
 
-    const updated = await Tieccuoi.findByIdAndUpdate(
-      tieccuoiId,
-      updatedTieccuoiData,
-      {
-        new: true,
-        runValidators: true,
-      }
-    );
+    const updated = await Tieccuoi.findByIdAndUpdate(tieccuoiId, updatedData, {
+      new: true,
+      runValidators: true,
+    });
 
-    if (!updated) {
-      return res.status(404).json({ error: 'Tiệc cưới không tồn tại' });
-    }
+    if (!updated) return res.status(404).json({ error: 'Tiệc cưới không tồn tại' });
 
-    // ✅ Nếu trạng thái là "Đã thanh toán"
-    if (updatedTieccuoiData.TRANGTHAI === 'Đã thanh toán') {
-      const eventDate = new Date(updatedTieccuoiData.NGAYDAI);
+    // Nếu chuyển sang trạng thái thanh toán
+    if (updatedData.TRANGTHAI === 'Đã thanh toán') {
+      const eventDate = new Date(updatedData.NGAYDAI);
       const today = new Date();
-      // Tính số ngày trễ (làm tròn lên)
       const msPerDay = 1000 * 60 * 60 * 24;
       const daysLate = Math.max(0, Math.ceil((today - eventDate) / msPerDay));
-
-      const tienCoc = updated.TIENCOC;
-      // Gốc là 10x tiền cọc, sau đó cộng phạt % theo số ngày trễ
-  const multiplier = daysLate === 0
-    ? 1
-    : 1 + (daysLate - 1) / 100;
-      const tienPhaiTra = tienCoc * 10 * multiplier;
+      const multiplier = daysLate === 0 ? 1 : 1 + (daysLate - 1) / 100;
+      const tienPhaiTra = updated.TIENCOC * 10 * multiplier;
 
       await Hoadon.findOneAndUpdate(
         { MATIEC: updated.MATIEC },
         { $set: { TONGTIEN: tienPhaiTra } }
       );
 
-      console.log(`Hóa đơn đã cập nhật (${daysLate} ngày trễ -> phạt ${daysLate}%)`);
+      await updateMonthlyReport(updatedData.NGAYDAI);
     }
 
     res.status(200).json(updated);
   } catch (err) {
-    console.log(err);
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 });
 
-
-
+// ✅ Xoá tiệc cưới + hoá đơn + chi tiết
 router.delete('/:id', async (req, res) => {
   try {
-    // 1) Xoá tiệc cưới và lấy về document vừa bị xoá
     const deletedParty = await Tieccuoi.findByIdAndDelete(req.params.id);
-    if (!deletedParty) {
+    if (!deletedParty)
       return res.status(404).json({ error: 'Tiệc cưới không tồn tại' });
-    }
-    console.log(`Đã xoá tiệc cưới ${deletedParty.MATIEC}`);
 
-    // 2) Xoá luôn hoá đơn liên quan
     await Hoadon.deleteMany({ MATIEC: deletedParty.MATIEC });
-    console.log(`Đã xoá tất cả hoá đơn của tiệc ${deletedParty.MATIEC}`);
-    // 3) Xoá chi tiết món ăn
     await Chitietmonan.deleteMany({ MATIEC: deletedParty.MATIEC });
-    console.log(`Đã xoá tất cả món ăn của tiệc ${deletedParty.MATIEC}`);
-    // 3) Xoá chi tiết dịch vụ
     await Chitietdichvu.deleteMany({ MATIEC: deletedParty.MATIEC });
-    console.log(`Đã xoá tất cả dịch vụ của tiệc ${deletedParty.MATIEC}`);
 
-    // 4) Trả về kết quả
-    return res.status(200).json({ message: 'Xoá thành công tiệc cưới và hoá đơn liên quan' });
+    // Cập nhật lại báo cáo tháng
+    await updateMonthlyReport(deletedParty.NGAYDAI);
+
+    res.status(200).json({ message: 'Xoá thành công tiệc cưới và các dữ liệu liên quan' });
   } catch (err) {
-    console.error('Lỗi khi xoá:', err);
-    return res.status(500).json({
-      error: 'Internal Server Error',
-      details: err.message
-    });
+    res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 });
-module.exports = router
+
+module.exports = router;

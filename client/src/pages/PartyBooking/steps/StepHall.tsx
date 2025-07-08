@@ -109,6 +109,7 @@ export default function StepHall() {
             }))));
     }, []);
 
+
     const tables = Number(watch("tables") || 0);
     const reserveTables = Number(watch("reserveTables") || 0);
     const totalTables = (tables + reserveTables) || 0;
@@ -121,6 +122,10 @@ export default function StepHall() {
             && matchesTables;
     });
 
+
+        const availableHalls = selectedDate && selectedShift
+    ? filteredHalls.filter(hall => !bookedHallIds.includes(hall.id))
+    : filteredHalls;
     // useEffect(() => {
     //     register("hall", { required: "Vui lòng chọn một sảnh" });
 
@@ -158,25 +163,18 @@ export default function StepHall() {
                                 columnGap: { sm: '3%', md: '2%' },
                                 padding: '3px'
                             }}>
-                                {filteredHalls.map(hall => {
-                                    const isBooked = bookedHallIds.includes(hall.id);
-                                    return (
+                                {availableHalls.length > 0 ? availableHalls.map(hall => (
+                                    
                                         <Card
                                             key={hall.id}
                                             onClick={() => {
-                                                if (isBooked) {
-                                                    setError("hall", {
-                                                        type: "manual",
-                                                        message: "Sảnh này đã được đặt, vui lòng chọn sảnh khác",
-                                                    });
-
-                                                } else {
+                                               
 
                                                     clearErrors("hall");
                                                     field.onChange(hall);
-                                                }
+                                                }}
 
-                                            }}
+                                            
                                             sx={{
                                                 borderRadius: 3,
                                                 cursor: "pointer",
@@ -264,7 +262,19 @@ export default function StepHall() {
                                             </CardContent>
                                         </Card>
                                     )
-                                })}
+                                ):                      <Box
+        sx={{
+          gridColumn: '1 / -1',   // chiếm hết từ cột đầu đến cột cuối
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+        }}
+      >
+        <Typography color="gray">
+          Không còn sảnh trống
+        </Typography>
+      </Box>
+                            }
                             </Box>
                         </Box>
                     ) : (

@@ -25,6 +25,8 @@ const chitietmonanRoutes = require('./routes/chitietmonanRoutes')
 const chitietdichvuRoutes = require('./routes/chitietdichvuRoutes')
 const hoadonRoutes = require('./routes/hoadonRoutes')
 const baocaoRoutes = require('./routes/baocaoRoutes')
+const chitietbaocaoRoutes = require('./routes/chitietbaocaoRoutes');
+
 
 
 app.use('/api/sanh', sanhRoutes)
@@ -36,6 +38,8 @@ app.use('/api/chitietmonan', chitietmonanRoutes)
 app.use('/api/chitietdichvu', chitietdichvuRoutes)
 app.use('/api/hoadon', hoadonRoutes)
 app.use('/api/baocao', baocaoRoutes)
+app.use('/api/chitietbaocao', chitietbaocaoRoutes);
+
 
 
 app.listen(PORT, () => {

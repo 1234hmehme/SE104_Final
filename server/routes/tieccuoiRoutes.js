@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const Tieccuoi = require('./../models/Tieccuoi')
 const Hoadon = require('./../models/Hoadon')
-
+const Chitietmonan = require('./../models/Chitietmonan'); // THÊM DÒNG NÀY Ở ĐẦU FILE
+const Chitietdichvu = require('../models/Chitietdichvu');
 
 
 router.post('/', async (req, res) => {
@@ -11,18 +12,44 @@ router.post('/', async (req, res) => {
     const newMaTiec = `TC${String(count + 1).padStart(2, '0')}`;
 
     const data = req.body;
-    data.MATIEC = newMaTiec;
+    const { foods = [], services = [] } = data;
 
-    // Default trạng thái
+    data.MATIEC = newMaTiec;
     if (!data.TRANGTHAI) {
       data.TRANGTHAI = 'Đã đặt cọc';
     }
 
+    // ✅ Lưu tiệc cưới
     const newTieccuoi = new Tieccuoi(data);
     const savedTieccuoi = await newTieccuoi.save();
-    console.log('Tiệc cưới đã lưu');
+    console.log('✅ Tiệc cưới đã lưu');
 
-    // ✅ Tạo hóa đơn tương ứng
+    // ✅ Tạo chi tiết món ăn nếu có
+    if (foods.length > 0) {
+      const foodRecords = foods.map(food => ({
+        MATIEC: newMaTiec,
+        MAMONAN: food.foodId,
+        GIATIEN: food.price,
+        GHICHU: food.note || ''
+      }));
+      await Chitietmonan.insertMany(foodRecords);
+      console.log('✅ Đã lưu chi tiết món ăn');
+    }
+
+    // ✅ Tạo chi tiết dịch vụ nếu có
+    if (services.length > 0) {
+      const serviceRecords = services.map(sv => ({
+        MATIEC: newMaTiec,
+        MADICHVU: sv.serviceId,
+        SOLUONG: sv.quantity,
+        GIATIEN: sv.price,
+        GHICHU: sv.note || ''
+      }));
+      await Chitietdichvu.insertMany(serviceRecords);
+      console.log('✅ Đã lưu chi tiết dịch vụ');
+    }
+
+    // ✅ Tạo hóa đơn
     const newHoadon = new Hoadon({
       MATIEC: newMaTiec,
       NGAYTHANHTOAN: data.NGAYDAI,
@@ -31,14 +58,16 @@ router.post('/', async (req, res) => {
         : data.TIENCOC,
     });
     await newHoadon.save();
-    console.log('Hóa đơn đã tạo');
+    console.log('✅ Hóa đơn đã tạo');
 
     res.status(200).json(savedTieccuoi);
   } catch (err) {
-    console.log(err);
+    console.error('❌ Lỗi tạo tiệc cưới:', err);
     res.status(500).json({ error: 'Internal Server Error', details: err.message });
   }
 });
+
+
 
 
 router.get('/', async (req, res) => {
@@ -115,8 +144,14 @@ router.delete('/:id', async (req, res) => {
     // 2) Xoá luôn hoá đơn liên quan
     await Hoadon.deleteMany({ MATIEC: deletedParty.MATIEC });
     console.log(`Đã xoá tất cả hoá đơn của tiệc ${deletedParty.MATIEC}`);
+    // 3) Xoá chi tiết món ăn
+    await Chitietmonan.deleteMany({ MATIEC: deletedParty.MATIEC });
+    console.log(`Đã xoá tất cả món ăn của tiệc ${deletedParty.MATIEC}`);
+    // 3) Xoá chi tiết dịch vụ
+    await Chitietdichvu.deleteMany({ MATIEC: deletedParty.MATIEC });
+    console.log(`Đã xoá tất cả dịch vụ của tiệc ${deletedParty.MATIEC}`);
 
-    // 3) Trả về kết quả
+    // 4) Trả về kết quả
     return res.status(200).json({ message: 'Xoá thành công tiệc cưới và hoá đơn liên quan' });
   } catch (err) {
     console.error('Lỗi khi xoá:', err);

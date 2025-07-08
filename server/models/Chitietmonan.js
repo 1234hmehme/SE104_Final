@@ -11,11 +11,6 @@ const ChitietmonanSchema = new mongoose.Schema({
     required: true,
     ref: 'Monan'
   },
-  SOLUONG: {
-    type: Number,
-    required: true,
-    min: 1
-  },
   GIATIEN: {
     type: Number,
     required: true,

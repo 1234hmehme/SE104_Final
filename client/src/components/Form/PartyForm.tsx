@@ -13,6 +13,7 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { formatDate } from "../../utils/formatDate";
+import { defaultBgColorMap, defaultTextColorMap } from "../../assets/color/ColorMap";
 
 export default function PartyForm({
     open,
@@ -61,6 +62,15 @@ export default function PartyForm({
             status: "Đã đặt cọc",
         });
     }, [initialData]);
+
+    const now = new Date();
+    const eventDate = new Date(form.date);
+    const oneDayMs = 1000 * 60 * 60 * 24;
+
+    // Số ngày trễ (làm tròn lên)
+    const daysLate = Math.max(0, Math.ceil((now.getTime() - eventDate.getTime()) / oneDayMs));
+    // Tiền phạt = 1% mỗi ngày trễ trên tổng tiền
+    const penalty = daysLate * 0.01 * form.deposit * 10;
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth
@@ -227,54 +237,80 @@ export default function PartyForm({
                             disabled={true}
                             onChange={(e) => setForm({ ...form, reserveTables: Number(e.target.value) })} />
                     </Box>
+
                     <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                         <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
                             Trạng thái
                         </Typography>
-                        {(!readOnly && form.status === 'Đã đặt cọc') ? ( 
-                        <Select
-                            value={form.status}
-                            onChange={(e) => setForm({ ...form, status: e.target.value })}
-                            disabled={readOnly}
-                            sx={{
-                                height: '61px',
-                                "& .MuiSelect-icon": {
-                                    color: "var(--text-color)",
-                                },
-                            }}
-                            MenuProps={{
-                                PaperProps: {
-                                    sx: {
-                                        boxSizing: 'border-box',
-                                        padding: "0 8px",
-                                        border: "1px solid #e4e4e7",
-                                        "& .MuiMenuItem-root": {
-                                            borderRadius: "6px",
-                                            "&:hover": {
-                                                backgroundColor: "rgba(117, 126, 136, 0.08)",
-                                            },
-                                            "&.Mui-selected": {
-                                                backgroundColor: "#bcd7ff",
-                                            },
-                                        },
-                                    },
-                                },
-                            }}
-                        >
-                            <MenuItem value="Đã đặt cọc">Đã đặt cọc</MenuItem>
-                            <MenuItem value="Đã thanh toán">Đã thanh toán</MenuItem>
-                            <MenuItem value="Đã huỷ">Đã huỷ</MenuItem>
-                        </Select>
 
-                        ) : (
+                        <Box sx={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
+                            {!readOnly && initialData?.status == 'Đã đặt cọc' ?
+                                ['Đã đặt cọc', 'Đã thanh toán', 'Đã huỷ'].map((status) =>
+                                    <Box
+                                        onClick={() => {
+                                            setForm({ ...form, status: status })
+                                        }}
+                                        sx={[{
+                                            width: 'fit-content',
+                                            padding: '5px 30px',
+                                            fontSize: "14px",
+                                            fontWeight: "bold",
+                                            borderRadius: '8px',
+                                            borderColor: defaultTextColorMap[status],
+                                            color: defaultTextColorMap[status],
+                                            textTransform: "none",
+                                            cursor: 'pointer',
+                                        }, form.status == status ? {
+                                            backgroundColor: defaultBgColorMap[status],
+                                        } : {
+                                            borderWidth: '1px',
+                                            borderStyle: 'solid',
+                                        }]}
+                                    >
+                                        {status}
+                                    </Box>
+                                )
+                                :
+                                <Box sx={{
+                                    width: 'fit-content',
+                                    padding: '5px 30px',
+                                    fontSize: "14px",
+                                    fontWeight: "bold",
+                                    borderRadius: '8px',
+                                    backgroundColor: defaultBgColorMap[form.status],
+                                    color: defaultTextColorMap[form.status],
+                                    textTransform: "none",
+                                }}>
+                                    {form.status}
+                                </Box>
 
-                        // Khi đã ở “Đã thanh toán” hoặc “Đã huỷ”, hoặc đang xem readOnly
-                        <Typography sx={{ lineHeight: '61px' }}>
-                        {form.status}
-                        </Typography>
-                    )}                           
+                            }
+                        </Box>
                     </Box>
 
+                    {form.status == 'Đã đặt cọc' &&
+                        <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+                            <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
+                                Tổng tiền còn lại: {(form.deposit * 10).toLocaleString()} VND
+                            </Typography>
+                            <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
+                                Ngày đến hạn thanh toán: {formatDate(form.date)}
+                            </Typography>
+                            {new Date(form.date) < new Date() &&
+                                <Box>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
+                                        Đã trễ hạn: {daysLate} ngày
+                                    </Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
+                                        Tiền phạt: {penalty.toLocaleString()} VND ({daysLate}%)
+                                    </Typography>
+                                    <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
+                                        Tổng cần thanh toán: {(form.deposit * 10 + penalty).toLocaleString()} VND
+                                    </Typography>
+                                </Box>
+                            }
+                        </Box>
+                    }
                 </Box>
             </DialogContent>
 
@@ -295,19 +331,7 @@ export default function PartyForm({
                     >
                         Huỷ
                     </Button>
-                    {/* <Button
-                        variant="contained"
-                        onClick={() => onExportBill?.(form)}
-                        sx={{
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                            borderRadius: '8px',
-                            backgroundColor: "#4880FF",
-                            textTransform: "none",
-                        }}
-                    >
-                        Xuất hóa đơn
-                    </Button> */}
+
                     <Button
                         variant="contained"
                         color="success"

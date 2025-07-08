@@ -442,6 +442,7 @@ export default function StepHall() {
                                 </Typography>
                                 <DatePicker
                                     {...field}
+                                    minDate={dayjs().add(1, 'day')}
                                     format="DD/MM/YYYY"
                                     value={field.value ? dayjs(field.value) : null}
                                     onChange={(value) => field.onChange((value?.toDate() || new Date()).toString())}

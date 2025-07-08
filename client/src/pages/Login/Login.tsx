@@ -57,10 +57,10 @@ const LoginPage: React.FC = () => {
                 const data = await response.json();
 
                 if (response.ok) {
-                    console.log('Đăng nhập thành công:', data);
-                    // Ví dụ: lưu username và role vào localStorage
                     localStorage.setItem('username', data.username);
+                    localStorage.setItem('role', data.role); // Đảm bảo lưu role
                     login(data.role);
+                    navigate('/sanh-tiec'); // ✅ Chuyển hướng ngay lập tức
                 } else {
                     console.error('Lỗi đăng nhập:', data.message);
                     setPasswordError(data.message || 'Sai tài khoản hoặc mật khẩu');

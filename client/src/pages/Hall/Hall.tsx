@@ -38,6 +38,7 @@ import hallE2Image from "../../assets/ảnh 14.jpeg";
 import hallE3Image from "../../assets/ảnh 15.jpg";
 import { RoleBasedRender } from "../../components/RoleBasedRender.tsx";
 import SearchBar from "../../components/SearchBar.tsx";
+import { defaultBgColorMap, defaultTextColorMap } from "../../assets/color/ColorMap.ts";
 
 interface IHallInfo {
     _id: string;
@@ -229,9 +230,26 @@ export default function HallPage() {
                                 onChange={handleTypeChange}
                             >
                                 <MenuItem value="all">Tất cả</MenuItem>
-                                {hallTypes.map((type) => (
-                                    <MenuItem key={type} value={type}>{`Loại ${type}`}</MenuItem>
-                                ))}
+
+                                {hallTypes.map((item) =>
+                                    <MenuItem value={item}
+                                        sx={{
+                                        }}
+                                    >
+                                        <Box sx={{
+                                            display: 'inline-flex',
+                                            paddingX: 1.5,
+                                            paddingY: 0.5,
+                                            borderRadius: 2,
+                                            backgroundColor: defaultBgColorMap[item],
+                                            color: defaultTextColorMap[item],
+                                            fontWeight: 'bold',
+                                            zIndex: 100
+                                        }}>
+                                            Loại {item}
+                                        </Box>
+                                    </MenuItem>
+                                )}
                             </Select>
                         </FormControl>
                     </Box>

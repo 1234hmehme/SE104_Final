@@ -1,4 +1,5 @@
 import './App.css';
+import React, { useEffect } from 'react';
 import { BrowserRouter, useLocation, useNavigate } from "react-router-dom";
 import Sidebar from './components/Sidebar/Sidebar';
 import AppRoutes from "./routes/AppRoutes.tsx";
@@ -18,7 +19,6 @@ function MainLayout() {
   return (
     <div className="appContainer">
       <Sidebar />
-
       <main className="content">
         <AppRoutes />
       </main>
@@ -31,12 +31,28 @@ function LayoutWrapper() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  if (!isInitialized) {
-    return <CircularProgress />
-  }
+  useEffect(() => {
+    if (
+      isInitialized &&                 // đảm bảo auth đã khởi tạo
+      !role &&                         // chưa đăng nhập
+      location.pathname !== '/login' &&
+      !location.pathname.includes('/register')
+    ) {
+      navigate('/login', { replace: true });
+    }
+  }, [isInitialized, role, location.pathname, navigate]);
 
-  if (!role && !location.pathname.includes('register')) {
-    navigate("/login");
+  if (!isInitialized) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh'
+      }}>
+        <CircularProgress />
+      </div>
+    );
   }
 
   return role ? <MainLayout /> : <AuthLayout />;

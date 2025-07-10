@@ -18,7 +18,12 @@ const TaikhoanSchema = new mongoose.Schema({
   LoaiTK: {
     type: String,
     required: true,
-    enum: ['Admin', 'NhanVien']
+    enum: ['Admin', 'NhanVien'],
+    default: 'NhanVien'  // Mặc định là nhân viên khi đăng ký
+  },
+  DaDuyet: {
+    type: Boolean,
+    default: false        // Mặc định chưa được admin duyệt
   }
 });
 

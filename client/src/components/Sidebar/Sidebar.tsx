@@ -32,7 +32,7 @@ export default function Sidebar() {
     { path: 'dich-vu', icon: <Gift size={26} />, label: 'Dịch vụ' },
     { path: 'hoa-don', icon: <ReceiptLong sx={{ width: '28px', height: '28px'}}/>, label: 'Hóa đơn' },
     { path: 'bao-cao', icon: <ChartArea size={26} />, label: 'Báo cáo', roles: ['Admin'] },
-
+    { path: 'xac-nhan-tai-khoan', icon: <Settings size={26} />, label: 'Xác nhận tài khoản', roles: ['Admin'] },
   ];
 
   const menuItems = rawMenuItems.filter(item =>

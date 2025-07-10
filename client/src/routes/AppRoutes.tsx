@@ -6,6 +6,8 @@ import Food from "../pages/Food/Food";
 import Service from "../pages/Service/Service";
 import Bill from "../pages/Bill/Bill";
 import Report from "../pages/Report/Report";
+import AccountApproval from "../pages/Admin/AccountApproval";
+
 
 import Login from "../pages/Login/Login.tsx"
 import Register from "../pages/Login/Register.tsx"
@@ -47,6 +49,14 @@ export default function AppRoutes() {
 
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route
+          path="/xac-nhan-tai-khoan"
+          element={
+            <ProtectedRoute allow="Admin">
+              <AccountApproval />
+            </ProtectedRoute>
+          }
+        />
 
       <Route
         path="*"

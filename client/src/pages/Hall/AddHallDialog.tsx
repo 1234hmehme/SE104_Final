@@ -1,45 +1,49 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, TextField, FormControl, InputLabel, Select, MenuItem, Button, Box } from '@mui/material';
+import ImageUploader from '../../components/ImageUploader';
+import sanhApi from '../../apis/sanhApis';
 // Nếu cần dùng IHallInfo hoặc hallInfo thì import từ './hallInfo.mock';
 
 interface AddHallDialogProps {
     open: boolean;
     onClose: () => void;
+    onSuccess: (message: string) => void;
+    onFail: (message: string) => void;
     hallTypes: string[];
-    onAddHall: (hall: any) => void;
 }
 
-const AddHallDialog: React.FC<AddHallDialogProps> = ({ open, onClose, hallTypes,onAddHall }) => {
-    const [name, setName] = React.useState("");
-    const [type, setType] = React.useState("");
-    const [maxTables, setMaxTables] = React.useState("");
-    const [price, setPrice] = React.useState("");
-    const [note, setNote] = React.useState("");
-    const [loading, setLoading] = React.useState(false);
+const AddHallDialog: React.FC<AddHallDialogProps> = ({ open, onClose, onSuccess, onFail, hallTypes }) => {
+    const [name, setName] = useState("");
+    const [type, setType] = useState("");
+    const [maxTables, setMaxTables] = useState("");
+    const [price, setPrice] = useState("");
+    const [note, setNote] = useState("");
+    const [file, setFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
 
     const handleSave = async () => {
+        if (!file) {
+            alert("Vui lòng chọn ảnh!");
+            return;
+        }
         setLoading(true);
+        const formData = new FormData();
+        formData.append("TENSANH", name);
+        formData.append("LOAISANH", type);
+        formData.append("SOLUONGBANTD", maxTables);
+        formData.append("DONGIABANTT", price);
+        formData.append("GHICHU", note);
+        formData.append("HINHANH", file); // 👈 gửi ảnh lên cùng dữ liệu
+
         try {
-            const res = await fetch("http://localhost:3000/api/sanh", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    TENSANH: name,
-                    LOAISANH: type,
-                    SOLUONGBANTD: Number(maxTables),
-                    DONGIABANTT: Number(price),
-                    GHICHU: note
-                })
-            });
-            if (!res.ok) throw new Error("Lỗi khi thêm sảnh");
-            const newHall = await res.json(); // Lấy dữ liệu sảnh mới từ server
-            onAddHall(newHall); // Gọi callback để cập nhật danh sách
+            await sanhApi.create(formData);
+            onSuccess("Thêm sảnh thành công");
+
             setName(""); setType(""); setMaxTables(""); setPrice(""); setNote("");
             onClose();
         } catch (err) {
-            alert("Thêm sảnh thất bại!");
+            onFail("Thêm sảnh thất bại");
+            console.error(err);
         } finally {
             setLoading(false);
         }
@@ -68,12 +72,18 @@ const AddHallDialog: React.FC<AddHallDialogProps> = ({ open, onClose, hallTypes,
                 </FormControl>
                 <TextField label="Số Lượng Bàn Tối Đa" variant="outlined" type="number" fullWidth value={maxTables} onChange={e => setMaxTables(e.target.value)} />
                 <TextField label="Đơn giá" variant="outlined" fullWidth value={price} onChange={e => setPrice(e.target.value)} />
-                <TextField label="Ghi Chú" variant="outlined" multiline rows={4} fullWidth value={note} onChange={e => setNote(e.target.value)} />
+                <TextField label="Ghi Chú" variant="outlined" multiline rows={3} fullWidth value={note} onChange={e => setNote(e.target.value)} />
+                <ImageUploader
+                    onImageSelect={(file) => {
+                        console.log("Ảnh được chọn:", file);
+                        setFile(file)
+                    }}
+                />
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
                     <Button onClick={onClose} color="secondary" disabled={loading}>
                         Hủy
                     </Button>
-                    <Button variant="contained" onClick={handleSave} disabled={loading || !name || !type || !maxTables || !price}>
+                    <Button variant="contained" onClick={handleSave} disabled={loading || !name || !type || !maxTables || !price || !note}>
                         {loading ? "Đang lưu..." : "Lưu"}
                     </Button>
                 </Box>

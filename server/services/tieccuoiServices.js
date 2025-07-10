@@ -3,10 +3,10 @@ const Hoadon = require('../models/Hoadon');
 const Chitietmonan = require('../models/Chitietmonan');
 const Chitietdichvu = require('../models/Chitietdichvu');
 const baocaoServices = require('../services/baocaoServices');
+const { v4: uuidv4 } = require('uuid');
 
 exports.create = async (data) => {
-  const count = await Tieccuoi.countDocuments();
-  const newMaTiec = `TC${String(count + 1).padStart(2, '0')}`;
+  const newMaTiec = uuidv4();
   const { foods = [], services = [] } = data;
 
   data.MATIEC = newMaTiec;
@@ -87,7 +87,7 @@ exports.pay = async (id) => {
   await tiec.save();
   
   const hoaDonDatCoc = await Hoadon.findOne({ MATIEC: tiec.MATIEC });
-  
+
   const newHoadon = new Hoadon({
     MATIEC: tiec.MATIEC,
     NGAYTHANHTOAN: tiec.NGAYDAI,

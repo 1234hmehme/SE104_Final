@@ -20,6 +20,10 @@ const SanhSchema = new mongoose.Schema({
   GHICHU: {
     type: String,
     required: true
+  },
+  HINHANH: {
+    type: String,
+    default: ""
   }
 })
 

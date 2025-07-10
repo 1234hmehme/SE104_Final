@@ -14,7 +14,7 @@ cloudinary.config({
 const storage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
-    folder: 'wedding-app',
+    folder: 'wedding_assets',
     allowed_formats: ['jpg', 'png', 'jpeg'],
   },
 });

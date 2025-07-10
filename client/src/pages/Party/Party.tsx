@@ -85,7 +85,6 @@ export default function PartyPage() {
 
     useEffect(() => {
         fetchParties(); // tải danh sách tiệc cưới ban đầu
-        console.log('date: ' + dayjs('2025-07-11T17:00:00.000Z'))
     }, []);
 
     useEffect(() => {

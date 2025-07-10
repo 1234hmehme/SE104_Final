@@ -1,5 +1,7 @@
-import React from 'react';
+import { useEffect, useState } from 'react';
 import { Dialog, DialogTitle, DialogContent, TextField, FormControl, InputLabel, Select, MenuItem, Button, Box } from '@mui/material';
+import sanhApi from '../../apis/sanhApis';
+import ImageUploader from '../../components/ImageUploader';
 
 interface IHallInfo {
     _id: string,
@@ -8,25 +10,28 @@ interface IHallInfo {
     SOLUONGBANTD: number;
     DONGIABANTT: number;
     GHICHU: string;
-    image?: string;
+    HINHANH: string;
 }
 
 interface EditHallDialogProps {
     open: boolean;
     onClose: () => void;
+    onSuccess: (message: string) => void;
+    onFail: (message: string) => void;
     hall: IHallInfo | null;
     hallTypes: string[];
-    onUpdateHall: (hall: IHallInfo) => void;
 }
 
-const EditHallDialog: React.FC<EditHallDialogProps> = ({ open, onClose, hall, hallTypes,onUpdateHall }) => {
-    const [name, setName] = React.useState(hall?.TENSANH || "");
-    const [type, setType] = React.useState(hall?.LOAISANH || "");
-    const [maxTables, setMaxTables] = React.useState(hall?.SOLUONGBANTD?.toString() || "");
-    const [price, setPrice] = React.useState(hall?.DONGIABANTT?.toString() || "");
-    const [note, setNote] = React.useState(hall?.GHICHU || "");
+const EditHallDialog: React.FC<EditHallDialogProps> = ({ open, onClose, hall, hallTypes, onSuccess, onFail, }) => {
+    const [name, setName] = useState(hall?.TENSANH || "");
+    const [type, setType] = useState(hall?.LOAISANH || "");
+    const [maxTables, setMaxTables] = useState(hall?.SOLUONGBANTD?.toString() || "");
+    const [price, setPrice] = useState(hall?.DONGIABANTT?.toString() || "");
+    const [note, setNote] = useState(hall?.GHICHU || "");
+    const [file, setFile] = useState<File | null>(null);
+    const [loading, setLoading] = useState(false);
 
-    React.useEffect(() => {
+    useEffect(() => {
         setName(hall?.TENSANH || "");
         setType(hall?.LOAISANH || "");
         setMaxTables(hall?.SOLUONGBANTD?.toString() || "");
@@ -36,21 +41,30 @@ const EditHallDialog: React.FC<EditHallDialogProps> = ({ open, onClose, hall, ha
 
     const handleSave = async () => {
         if (!hall) return;
-        const updatedHall: IHallInfo = {
-            ...hall,
-            TENSANH: name,
-            LOAISANH: type,
-            SOLUONGBANTD: Number(maxTables),
-            DONGIABANTT: Number(price),
-            GHICHU: note,
-        };
-        await fetch(`http://localhost:3000/api/sanh/${hall._id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedHall),
-        });
-        onUpdateHall(updatedHall);
-        onClose();
+
+        setLoading(true);
+
+        const formData = new FormData();
+        formData.append("TENSANH", name);
+        formData.append("LOAISANH", type);
+        formData.append("SOLUONGBANTD", maxTables);
+        formData.append("DONGIABANTT", price);
+        formData.append("GHICHU", note);
+        if (file) {
+            formData.append("HINHANH", file);
+        }
+
+        try {
+            await sanhApi.update(hall._id, formData);
+            onSuccess("Cập nhật sảnh thành công");
+            onClose();
+        } catch (err) {
+            console.error("Lỗi khi sửa:", err);
+            onFail("Cập nhật sảnh thất bại");
+        } finally {
+            setLoading(false);
+            //setIsSaveInfoConfirmOpen(false);
+        }
     };
 
     return (
@@ -101,12 +115,16 @@ const EditHallDialog: React.FC<EditHallDialogProps> = ({ open, onClose, hall, ha
                     value={note}
                     onChange={e => setNote(e.target.value)}
                 />
+                <ImageUploader
+                    initialImage={hall?.HINHANH}
+                    onImageSelect={(file) => setFile(file)}
+                />
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-                    <Button onClick={onClose} color="secondary">
+                    <Button onClick={onClose} color="secondary" disabled={loading}>
                         Hủy
                     </Button>
-                    <Button variant="contained" onClick={handleSave}>
-                        Lưu
+                    <Button variant="contained" onClick={handleSave} disabled={loading || !name || !type || !maxTables || !price || !note}>
+                        {loading ? "Đang lưu..." : "Lưu"}
                     </Button>
                 </Box>
             </DialogContent>

@@ -9,8 +9,9 @@ import {
     FormControl,
     Select,
     MenuItem,
-    SelectChangeEvent,
     Button,
+    Snackbar,
+    Alert,
 } from "@mui/material";
 import PetalAnimation from '../../components/Animations/PetalAnimation';
 import TableRestaurantIcon from '@mui/icons-material/TableRestaurant';
@@ -21,56 +22,23 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import ConfirmDelete from '../../components/Alert/ConfirmDelete.tsx';
 import AddHallDialog from './AddHallDialog.tsx';
 import EditHallDialog from './EditHallDialog.tsx';
-import hallA1Image from "../../assets/ảnh 1.webp";
-import hallA2Image from "../../assets/ảnh 2.webp";
-import hallA3Image from "../../assets/ảnh 3.jpg";
-import hallB1Image from "../../assets/ảnh 4.jpg";
-import hallB2Image from "../../assets/ảnh 5.jpg";
-import hallB3Image from "../../assets/ảnh 6.png";
-import hallC1Image from "../../assets/ảnh 7.jpg";
-import hallC2Image from "../../assets/ảnh 8.jpg";
-import hallC3Image from "../../assets/ảnh 9.jpg";
-import hallD1Image from "../../assets/ảnh 10.jpg";
-import hallD2Image from "../../assets/ảnh 11.jpg";
-import hallD3Image from "../../assets/ảnh 12.jpg";
-import hallE1Image from "../../assets/ảnh 13.jpg";
-import hallE2Image from "../../assets/ảnh 14.jpeg";
-import hallE3Image from "../../assets/ảnh 15.jpg";
 import { RoleBasedRender } from "../../components/RoleBasedRender.tsx";
 import SearchBar from "../../components/SearchBar.tsx";
 import { defaultBgColorMap, defaultTextColorMap } from "../../assets/color/ColorMap.ts";
+import sanhApi from "../../apis/sanhApis.ts";
 
-interface IHallInfo {
+export interface IHallInfo {
     _id: string;
     TENSANH: string;
     LOAISANH: string;
     SOLUONGBANTD: number;
     DONGIABANTT: number;
     GHICHU: string;
-    image?: string;
-}
-function getHallImage(tenSanh: string) {
-    const ten = tenSanh.toLowerCase();
-    if (ten.includes("grand ballroom a1")) return hallA1Image;
-    if (ten.includes("crystal hall a2")) return hallA2Image;
-    if (ten.includes("diamond suite a3")) return hallA3Image;
-    if (ten.includes("pearl grand b1")) return hallB1Image;
-    if (ten.includes("b2")) return hallB2Image;
-    if (ten.includes("b3")) return hallB3Image;
-    if (ten.includes("c1")) return hallC1Image;
-    if (ten.includes("c2")) return hallC2Image;
-    if (ten.includes("c3")) return hallC3Image;
-    if (ten.includes("d1")) return hallD1Image;
-    if (ten.includes("d2")) return hallD2Image;
-    if (ten.includes("d3")) return hallD3Image;
-    if (ten.includes("e1")) return hallE1Image;
-    if (ten.includes("e2")) return hallE2Image;
-    if (ten.includes("e3")) return hallE3Image;
-    return "https://via.placeholder.com/400x220?text=No+Image";
+    HINHANH: string;
 }
 
 export default function HallPage() {
-    const [selectedHall, setSelectedHall] = useState<string | null>(null);
+    const [selectedHall, setSelectedHall] = useState<IHallInfo | null>(null);
     const [searchQuery, setSearchQuery] = useState<string>('');
     const [selectedType, setSelectedType] = useState<string>('all');
     const [openAddHallDialog, setOpenAddHallDialog] = useState<boolean>(false);
@@ -80,69 +48,63 @@ export default function HallPage() {
     const [hallToEdit, setHallToEdit] = useState<IHallInfo | null>(null);
     const [halls, setHalls] = useState<IHallInfo[]>([]);
 
+    const [successMessage, setSuccessMessage] = useState('');
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+
+    const fetchHalls = async () => {
+        try {
+            const data = await sanhApi.getAll();
+
+            const mapped = data.map((item: any) => ({
+                _id: item._id,
+                TENSANH: item.TENSANH,
+                LOAISANH: item.LOAISANH,
+                SOLUONGBANTD: item.SOLUONGBANTD,
+                DONGIABANTT: item.DONGIABANTT,
+                GHICHU: item.GHICHU,
+                HINHANH: item.HINHANH,
+            }));
+
+            setHalls(mapped);
+        } catch (err) {
+            console.error("Lỗi khi fetch sảnh:", err);
+        }
+    };
+
     useEffect(() => {
-        fetch("http://localhost:3000/api/sanh")
-            .then(res => res.json())
-            .then(data => setHalls(data));
+        fetchHalls();
     }, []);
 
-    const handleAddHall = (newHall: IHallInfo) => {
-        setHalls(prev => [...prev, newHall]);
+    useEffect(() => {
+        if (openSnackbar) {
+            const timer = setTimeout(() => setOpenSnackbar(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [openSnackbar]);
+
+    const handleSuccess = async (message: string) => {
+        await fetchHalls();
+        setSuccessMessage(message);
+        setOpenSnackbar(true);
     };
+
+    const handleFail = async (message: string) => {
+        setSuccessMessage(message);
+        setOpenSnackbar(true);
+    }
 
     const filteredHalls = halls.filter(hall =>
         hall.TENSANH.toLowerCase().includes(searchQuery.toLowerCase()) &&
         (selectedType === 'all' || hall.LOAISANH === selectedType)
     );
-    const handleUpdateHall = async (updatedHall: IHallInfo) => {
-        // Gọi API cập nhật
-        await fetch(`http://localhost:3000/api/sanh/${updatedHall._id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(updatedHall),
-        });
-        // Lấy lại danh sách mới từ DB
-        const res = await fetch("http://localhost:3000/api/sanh");
-        const data = await res.json();
-        setHalls(data);
-    };
-    const handleHallClick = (_id: string) => {
-        setSelectedHall(_id);
-    };
-
-    const handleCloseDialog = () => {
-        setSelectedHall(null);
-    };
-
-    const handleOpenAddHallDialog = () => {
-        setOpenAddHallDialog(true);
-    };
-
-    const handleCloseAddHallDialog = () => {
-        setOpenAddHallDialog(false);
-    };
 
     const handleDeleteClick = (_id: string) => {
         setHallToDelete(_id);
         setOpenConfirmDelete(true);
     };
 
-    const handleCloseConfirmDelete = () => {
-        setOpenConfirmDelete(false);
-        setHallToDelete(null);
-    };
-
-    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
-    };
-
-    const handleTypeChange = (event: SelectChangeEvent<string>) => {
-        setSelectedType(event.target.value);
-    };
-
-    const handleEditClick = (_id: string) => {
-        const hall = halls.find(h => h._id === _id);
-        setHallToEdit(hall || null);
+    const handleEditClick = (hall: IHallInfo) => {
+        setHallToEdit(hall);
         setOpenEditHallDialog(true);
     };
 
@@ -150,17 +112,7 @@ export default function HallPage() {
         setOpenEditHallDialog(false);
         setHallToEdit(null);
     };
-    const handleConfirmDelete = async () => {
-        if (!hallToDelete) return;
-        // Gọi API xóa
-        await fetch(`http://localhost:3000/api/sanh/${hallToDelete}`, {
-            method: "DELETE",
-        });
-        // Cập nhật lại state halls
-        setHalls(prev => prev.filter(hall => hall._id !== hallToDelete));
-        setOpenConfirmDelete(false);
-        setHallToDelete(null);
-    };
+
     const hallTypes = ["A", "B", "C", "D", "E"];
 
     return (
@@ -204,7 +156,7 @@ export default function HallPage() {
                     <Box sx={{ flex: 3, }}>
                         <SearchBar
                             value={searchQuery}
-                            onChange={handleSearchChange} />
+                            onChange={(e) => setSearchQuery(e.target.value)} />
                     </Box>
 
                     <Box sx={{
@@ -227,7 +179,7 @@ export default function HallPage() {
                         }}>
                             <Select
                                 value={selectedType}
-                                onChange={handleTypeChange}
+                                onChange={(e) => setSelectedType(e.target.value)}
                             >
                                 <MenuItem value="all">Tất cả</MenuItem>
 
@@ -272,7 +224,7 @@ export default function HallPage() {
                             },
                             textTransform: "none",
                         }}
-                        onClick={handleOpenAddHallDialog}
+                        onClick={() => setOpenAddHallDialog(true)}
                     >
                         Thêm sảnh
                     </Button>
@@ -304,7 +256,7 @@ export default function HallPage() {
                             },
                             position: 'relative',
                         }}
-                        onClick={() => handleHallClick(hall._id)}
+                        onClick={() => setSelectedHall(hall)}
                     >
                         <RoleBasedRender allow="Admin">
                             <Box sx={{
@@ -315,7 +267,7 @@ export default function HallPage() {
                                 gap: 1,
                                 zIndex: 2,
                             }} onClick={e => e.stopPropagation()}>
-                                <Button size="small" sx={{ minWidth: 0, p: 0.5 }} onClick={() => handleEditClick(hall._id)}>
+                                <Button size="small" sx={{ minWidth: 0, p: 0.5 }} onClick={() => handleEditClick(hall)}>
                                     <Box
                                         sx={{
                                             bgcolor: '#fff',
@@ -360,7 +312,7 @@ export default function HallPage() {
 
                         <CardMedia
                             component="img"
-                            image={getHallImage(hall.TENSANH)}
+                            image={hall.HINHANH}
                             alt={`Sảnh ${hall.TENSANH}`}
                             sx={{
                                 width: '100%',
@@ -403,7 +355,7 @@ export default function HallPage() {
 
             <Dialog
                 open={selectedHall !== null}
-                onClose={handleCloseDialog}
+                onClose={() => setSelectedHall(null)}
                 maxWidth="sm"
                 fullWidth
                 PaperProps={{
@@ -417,33 +369,31 @@ export default function HallPage() {
                 }}
             >
                 {selectedHall && (() => {
-                    const hallDetails = halls.find(h => h._id === selectedHall);
-                    if (!hallDetails) return null;
                     return (
                         <Box>
                             <Box sx={{ width: '100%', height: 240, overflow: 'hidden' }}>
-                                <img src={getHallImage(hallDetails.TENSANH)} alt={hallDetails.TENSANH} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                <img src={selectedHall.HINHANH} alt={selectedHall.TENSANH} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             </Box>
                             <Box sx={{ p: 3, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
                                 <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#2a3b5d', mb: 1, textAlign: 'center' }}>
-                                    {hallDetails.TENSANH}
+                                    {selectedHall.TENSANH}
                                 </Typography>
                                 <Box sx={{ display: 'flex', gap: 3, mb: 1 }}>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <TableRestaurantIcon sx={{ color: '#4880FF' }} />
-                                        <Typography variant="body1">Loại: <b>{hallDetails.LOAISANH}</b></Typography>
+                                        <Typography variant="body1">Loại: <b>{selectedHall.LOAISANH}</b></Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <AttachMoneyIcon sx={{ color: '#00b894' }} />
-                                        <Typography variant="body1">Giá bàn: <b>{hallDetails.DONGIABANTT.toLocaleString('vi-VN')} VNĐ</b></Typography>
+                                        <Typography variant="body1">Giá bàn: <b>{selectedHall.DONGIABANTT.toLocaleString('vi-VN')} VNĐ</b></Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <TableRestaurantIcon sx={{ color: '#ff9800' }} />
-                                        <Typography variant="body1">Tối đa: <b>{hallDetails.SOLUONGBANTD}</b> bàn</Typography>
+                                        <Typography variant="body1">Tối đa: <b>{selectedHall.SOLUONGBANTD}</b> bàn</Typography>
                                     </Box>
                                 </Box>
                                 <Typography variant="body2" sx={{ color: '#555', textAlign: 'center', mb: 2 }}>
-                                    {hallDetails.GHICHU}
+                                    {selectedHall.GHICHU}
                                 </Typography>
                             </Box>
                         </Box>
@@ -451,9 +401,45 @@ export default function HallPage() {
                 })()}
             </Dialog>
 
-            <AddHallDialog open={openAddHallDialog} onClose={handleCloseAddHallDialog} hallTypes={hallTypes} onAddHall={handleAddHall} />
-            <EditHallDialog open={openEditHallDialog} onClose={handleCloseEditHallDialog} hall={hallToEdit} hallTypes={hallTypes} onUpdateHall={handleUpdateHall} />
-            <ConfirmDelete open={openConfirmDelete} onClose={handleCloseConfirmDelete} onConfirm={handleConfirmDelete} />
+            <AddHallDialog
+                open={openAddHallDialog}
+                onClose={() => setOpenAddHallDialog(false)}
+                onSuccess={handleSuccess}
+                onFail={handleFail}
+                hallTypes={hallTypes}
+            />
+            <EditHallDialog
+                open={openEditHallDialog}
+                onClose={handleCloseEditHallDialog}
+                hall={hallToEdit} hallTypes={hallTypes}
+                onSuccess={handleSuccess}
+                onFail={handleFail}
+            />
+
+            <ConfirmDelete
+                open={openConfirmDelete}
+                onClose={() => setOpenConfirmDelete(false)}
+                onConfirm={async () => {
+                    if (!hallToDelete) return;
+
+                    try {
+                        await sanhApi.delete(hallToDelete);
+                        handleSuccess("Xóa sảnh thành công");
+                    } catch (err) {
+                        console.error("Lỗi khi xóa:", err);
+                        handleFail("Xóa sảnh thất bại");
+                    } finally {
+                        setOpenConfirmDelete(false);
+                        setHallToDelete(null);
+                    }
+                }}
+            />
+
+            <Snackbar open={openSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center', }}>
+                <Alert severity="success" sx={{ width: '100%', borderRadius: '10px' }}>
+                    {successMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

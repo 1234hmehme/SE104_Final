@@ -4,6 +4,7 @@ import Party from "../pages/Party/Party";
 import Schedule from "../pages/Schedule/Schedule";
 import Food from "../pages/Food/Food";
 import Service from "../pages/Service/Service";
+import Bill from "../pages/Bill/Bill";
 import Report from "../pages/Report/Report";
 
 import Login from "../pages/Login/Login.tsx"
@@ -33,6 +34,7 @@ export default function AppRoutes() {
       <Route path="/lich-su-kien/:view" element={<Schedule />} />
       <Route path="/mon-an" element={<Food />} />
       <Route path="/dich-vu" element={<Service />} />
+      <Route path="/hoa-don" element={<Bill />} />
 
       <Route
         path="/bao-cao"
@@ -42,7 +44,6 @@ export default function AppRoutes() {
           </ProtectedRoute>
         }
       />
-    
 
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />

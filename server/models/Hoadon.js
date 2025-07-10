@@ -4,19 +4,39 @@ const HoadonSchema = new mongoose.Schema({
   MATIEC: {
     type: String,
     required: true,
-    unique: true,
     ref: 'Tieccuoi'
   },
   NGAYTHANHTOAN: {
-    type: Date, 
-    required: true
-  },
-  TONGTIEN: {
-    type: Number,
+    type: Date,
     required: true,
+    default: Date.now
+  },
+  SOTIENHOADON: {
+    type: Number,
+    default: 0,
     min: 0
-  }
-  
+  },
+  TIENBAN: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  TIENDICHVU: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  TIENPHAT: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  LOAIHOADON: {
+    type: String,
+    enum: ["Đặt cọc", "Thanh toán"],
+    default: "Đặt cọc"
+  },
+
 })
 
 const Hoadon = mongoose.model('Hoadon', HoadonSchema);

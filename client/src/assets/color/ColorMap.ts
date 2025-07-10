@@ -15,6 +15,9 @@ export const defaultBgColorMap: ColorMap = {
     "Đã tổ chức": "#ccf0eb",        //green
     "Đã huỷ": "#fcd7d4",            //red
 
+    "Đặt cọc": "#fff4c7",
+    "Thanh toán": "#c7f4ff",
+
     "Món Khai Vị": "#fff4c7",           // yellow
     "Món Chính": "#c7f4ff",             // blue 
     "Món Tráng Miệng": "#e0d4fc",       // purple
@@ -35,6 +38,9 @@ export const defaultTextColorMap: ColorMap = {
     "Đã tổ chức": "#00b69b",
     "Đã huỷ": "#ef3826",
     
+    "Đặt cọc": "#d68b01",
+    "Thanh toán": "#00a8c6",
+
     "Món Khai Vị": "#d68b01",       // yellow
     "Món Chính": "#00a8c6",         // blue 
     "Món Tráng Miệng": "#6226ef",    // purple

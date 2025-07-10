@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Box, Typography, } from "@mui/material";
+import { Box, } from "@mui/material";
 import { IParty } from "../../interfaces/party.interface";
 import { defaultBgColorMap, } from "../../assets/color/ColorMap";
 import dayjs from "dayjs";

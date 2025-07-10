@@ -16,6 +16,7 @@ import {
 import IconButton from '@mui/material/IconButton';
 import { Box } from '@mui/material';
 import { useAuth } from '../../auth/AuthContext';
+import { ReceiptLong } from '@mui/icons-material';
 
 export default function Sidebar() {
   const [expanded, setExpanded] = useState(true);
@@ -29,6 +30,7 @@ export default function Sidebar() {
     { path: 'lich-su-kien/tuan', icon: <Calendar size={26} />, label: 'Lịch sự kiện' },
     { path: 'mon-an', icon: <Utensils size={26} />, label: 'Món ăn' },
     { path: 'dich-vu', icon: <Gift size={26} />, label: 'Dịch vụ' },
+    { path: 'hoa-don', icon: <ReceiptLong sx={{ width: '28px', height: '28px'}}/>, label: 'Hóa đơn' },
     { path: 'bao-cao', icon: <ChartArea size={26} />, label: 'Báo cáo', roles: ['Admin'] },
 
   ];

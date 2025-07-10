@@ -10,58 +10,42 @@ import { useParams, useNavigate } from "react-router-dom";
 import { LocalizationProvider, StaticDatePicker } from "@mui/x-date-pickers";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import ScheduleForm from "../../components/Form/ScheduleForm";
+import tieccuoiApi from "../../apis/tieccuoiApi";
 
 export default function Schedule() {
   const { view } = useParams<{ view: 'tuan' | 'thang' }>();
   const navigate = useNavigate();
-
-
   const [initialData, setInitialData] = useState<IParty[]>([]);
-  // 1. State mới để giữ danh sách halls:
-  const [halls, setHalls] = useState<{ _id: string; LOAISANH: string }[]>([]);
 
-  // 2. Khi component mount, fetch cả hai cùng lúc:
-  useEffect(() => {
-    async function loadAll() {
-      // fetch}sanh và tieccuoi song song
-      const [hRes, pRes] = await Promise.all([
-        fetch("http://localhost:3000/api/sanh"),
-        fetch("http://localhost:3000/api/tieccuoi"),
-      ]);
-      const hallsJson = await hRes.json() as any[];           // mỗi phần tử có _id, LOAISANH, TENSANH…
-      const partiesJson = await pRes.json() as any[];           // phần tiệc cưới
+  const fetchParties = async () => {
+    try {
+      const data = await tieccuoiApi.getAll();
 
-      const filtered = partiesJson.filter(item => item.TRANGTHAI !== 'Đã huỷ');
-
-
-      setHalls(hallsJson);
-
-      // 3. Map partiesJson thành IParty, ánh xạ MASANH -> LOAISANH
-      const mapped: IParty[] = filtered.map(item => {
-        // tìm hall doc có _id === item.MASANH
-        const hallDoc = hallsJson.find(h => h._id === item.MASANH);
-        return {
-          code: item.code,
-          id: item._id,
-          groom: item.TENCR,
-          bride: item.TENCD,
-          phone: item.SDT,
-          date: item.NGAYDAI,
-          shift: item.CA,
-          // gán hall bằng TENSANH, hoặc fallback về chính item.MASANH nếu không tìm thấy
-          hall: hallDoc?.TENSANH ?? item.TENSANH,
-          deposit: item.TIENCOC,
-          tables: item.SOLUONGBAN,
-          reserveTables: item.SOBANDT,
-          status: item.TRANGTHAI
-        };
-      });
+      const mapped = data.map((item: any) => ({
+        code: item.MATIEC,
+        id: item._id,
+        groom: item.TENCR,
+        bride: item.TENCD,
+        phone: item.SDT,
+        shift: item.CA,
+        hall: item.TENSANH,
+        hallType: item.LOAISANH,
+        date: item.NGAYDAI,
+        deposit: item.TIENCOC,
+        tables: item.SOLUONGBAN,
+        reserveTables: item.SOBANDT,
+        status: item.TRANGTHAI || "Đã đặt cọc",
+      }));
 
       setInitialData(mapped);
+    } catch (err) {
+      console.error("Lỗi khi fetch tiệc cưới:", err);
     }
-    loadAll();
-  }, []);
+  };
 
+  useEffect(() => {
+    fetchParties(); // tải danh sách tiệc cưới ban đầu
+  }, []);
 
   const [viewMode, setViewMode] = useState<'tuan' | 'thang'>(view || 'tuan');
   const [currentDate, setCurrentDate] = useState(dayjs());
@@ -308,11 +292,11 @@ export default function Schedule() {
       <PartyForm
         open={isPartyFormOpen}
         onClose={() => setIsPartyFormOpen(false)}
-        onSubmit={() => { }}
-        onExportBill={() => { }}
+        onUpdate={() => { }}
+        onPay={() => { }}
+        onCancel={() => { }}
         initialData={detailData}
         readOnly={true}
-        hallName={detailData?.hall || ""}
       />
 
       <ScheduleForm

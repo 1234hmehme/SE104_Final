@@ -18,7 +18,7 @@ import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
-import ConfirmDelete from '../../components/Alert/ConfirmDelete/ConfirmDelete';
+import ConfirmDelete from '../../components/Alert/ConfirmDelete.tsx';
 import AddHallDialog from './AddHallDialog.tsx';
 import EditHallDialog from './EditHallDialog.tsx';
 import hallA1Image from "../../assets/ảnh 1.webp";

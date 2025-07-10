@@ -1,7 +1,6 @@
 import { Dialog, DialogTitle, DialogActions, Button } from "@mui/material";
 
-
-export default function ConfirmDelete({ 
+export default function ConfirmPay({ 
     open, 
     onClose, 
     onConfirm 
@@ -10,20 +9,17 @@ export default function ConfirmDelete({
     onClose: () => void,
     onConfirm: () => void
 }) {
-
     return (
         <Dialog open={open} onClose={onClose}
             sx={{
                 '& .MuiPaper-root': {
-                    backgroundColor: "",
-                    color: "var(--text-color)",
                     padding: '20px 4px',
                     borderRadius: '15px'
                 }
             }}
         >
             <DialogTitle>
-                Bạn có chắc chắn muốn xóa không?
+                Xác nhận thanh toán tiệc cưới này?
             </DialogTitle>
 
             <DialogActions sx={{
@@ -33,7 +29,7 @@ export default function ConfirmDelete({
                     sx={{
                         fontSize: "14px",
                         fontWeight: "bold",
-                        color: 'var(--text-color)',
+                        color: 'black',
                         textTransform: "none",
                     }}
                 >
@@ -47,7 +43,7 @@ export default function ConfirmDelete({
                         textTransform: "none",
                     }}
                 >
-                    Xóa
+                    Xác nhận
                 </Button>
             </DialogActions>
         </Dialog>

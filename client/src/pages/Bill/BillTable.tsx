@@ -10,39 +10,32 @@ import {
     TableRow,
     TableSortLabel,
 } from "@mui/material";
-import { EditOutlined, DeleteOutline, } from "@mui/icons-material";
-import { IParty } from "../../interfaces/party.interface";
+import { IBill } from "../../interfaces/bill.interface";
 import { defaultBgColorMap, defaultTextColorMap } from "../../assets/color/ColorMap";
 import dayjs from "dayjs";
-import { RoleBasedRender } from "../../components/RoleBasedRender";
 import { Eye } from "lucide-react";
 
+type BillKey = keyof IBill;
 
-type PartyKey = keyof IParty;
-
-export default function PartyTable({
+export default function BillTable({
     data,
     searchKey,
     handleRead,
-    handleEdit,
-    handleDelete,
 }: {
-    data: IParty[],
+    data: IBill[],
     searchKey: string,
     handleRead: (party: any) => void,
-    handleEdit: (party: any) => void,
-    handleDelete: (id: any) => void,
 }) {
     const [order, setOrder] = useState<'asc' | 'desc'>('asc');
-    const [orderBy, setOrderBy] = useState<PartyKey>('id');
+    const [orderBy, setOrderBy] = useState<BillKey>('id');
 
-    const handleRequestSort = (property: PartyKey) => {
+    const handleRequestSort = (property: BillKey) => {
         const isAsc = orderBy === property && order === 'asc';
         setOrder(isAsc ? 'desc' : 'asc');
         setOrderBy(property);
     };
 
-    const sortedParties = [...data].sort((a, b) => {
+    const sortedBill = [...data].sort((a, b) => {
         const aValue = a[orderBy];
         const bValue = b[orderBy];
 
@@ -59,12 +52,8 @@ export default function PartyTable({
         return 0;
     });
     
-
     return (
-        <TableContainer
-            sx={{
-            }}
-        >
+        <TableContainer>
             <Table stickyHeader>
                 <TableHead>
                     <TableRow
@@ -116,10 +105,10 @@ export default function PartyTable({
                             </TableSortLabel>
                         </TableCell>
 
-                        <TableCell align="center" onClick={() => handleRequestSort('phone')}>
+                        <TableCell align="center" onClick={() => handleRequestSort('tableTotalPrice')}>
                             <TableSortLabel
-                                active={orderBy === 'phone'}
-                                direction={orderBy === 'phone' ? order : 'asc'}
+                                active={orderBy === 'tableTotalPrice'}
+                                direction={orderBy === 'tableTotalPrice' ? order : 'asc'}
                                 sx={{
                                     display: 'inline-flex',
                                     justifyContent: 'center',
@@ -130,7 +119,25 @@ export default function PartyTable({
                                     }
                                 }}
                             >
-                                <b>Số điện thoại</b>
+                                <b>Tổng tiền bàn</b>
+                            </TableSortLabel>
+                        </TableCell>
+
+                        <TableCell align="center" onClick={() => handleRequestSort('serviceTotalPrice')}>
+                            <TableSortLabel
+                                active={orderBy === 'serviceTotalPrice'}
+                                direction={orderBy === 'serviceTotalPrice' ? order : 'asc'}
+                                sx={{
+                                    display: 'inline-flex',
+                                    justifyContent: 'center',
+                                    '& .MuiTableSortLabel-icon': {
+                                        margin: 0,
+                                        position: 'absolute',
+                                        right: '-20px',
+                                    }
+                                }}
+                            >
+                                <b>Tổng tiền dịch vụ</b>
                             </TableSortLabel>
                         </TableCell>
 
@@ -148,14 +155,14 @@ export default function PartyTable({
                                     }
                                 }}
                             >
-                                <b>Ngày tổ chức</b>
+                                <b>Ngày thanh toán</b>
                             </TableSortLabel>
                         </TableCell>
 
-                        <TableCell align="center" onClick={() => handleRequestSort('shift')}>
+                        <TableCell align="center" onClick={() => handleRequestSort('paymentAmount')}>
                             <TableSortLabel
-                                active={orderBy === 'shift'}
-                                direction={orderBy === 'shift' ? order : 'asc'}
+                                active={orderBy === 'paymentAmount'}
+                                direction={orderBy === 'paymentAmount' ? order : 'asc'}
                                 sx={{
                                     display: 'inline-flex',
                                     justifyContent: 'center',
@@ -166,14 +173,14 @@ export default function PartyTable({
                                     }
                                 }}
                             >
-                                <b>Ca</b>
+                                <b>Số tiền</b>
                             </TableSortLabel>
                         </TableCell>
 
-                        <TableCell align="center" onClick={() => handleRequestSort('hall')}>
+                        <TableCell align="center" onClick={() => handleRequestSort('penalty')}>
                             <TableSortLabel
-                                active={orderBy === 'hall'}
-                                direction={orderBy === 'hall' ? order : 'asc'}
+                                active={orderBy === 'penalty'}
+                                direction={orderBy === 'penalty' ? order : 'asc'}
                                 sx={{
                                     display: 'inline-flex',
                                     justifyContent: 'center',
@@ -184,14 +191,14 @@ export default function PartyTable({
                                     }
                                 }}
                             >
-                                <b>Sảnh</b>
+                                <b>Tiền phạt</b>
                             </TableSortLabel>
                         </TableCell>
 
-                        <TableCell align="center" onClick={() => handleRequestSort('deposit')}>
+                        <TableCell align="center" onClick={() => handleRequestSort('type')}>
                             <TableSortLabel
-                                active={orderBy === 'deposit'}
-                                direction={orderBy === 'deposit' ? order : 'asc'}
+                                active={orderBy === 'type'}
+                                direction={orderBy === 'type' ? order : 'asc'}
                                 sx={{
                                     display: 'inline-flex',
                                     justifyContent: 'center',
@@ -202,61 +209,7 @@ export default function PartyTable({
                                     }
                                 }}
                             >
-                                <b>Tiền cọc</b>
-                            </TableSortLabel>
-                        </TableCell>
-
-                        <TableCell align="center" onClick={() => handleRequestSort('tables')}>
-                            <TableSortLabel
-                                active={orderBy === 'tables'}
-                                direction={orderBy === 'tables' ? order : 'asc'}
-                                sx={{
-                                    display: 'inline-flex',
-                                    justifyContent: 'center',
-                                    '& .MuiTableSortLabel-icon': {
-                                        margin: 0,
-                                        position: 'absolute',
-                                        right: '-20px',
-                                    }
-                                }}
-                            >
-                                <b>Số lượng bàn</b>
-                            </TableSortLabel>
-                        </TableCell>
-
-                        <TableCell align="center" onClick={() => handleRequestSort('reserveTables')}>
-                            <TableSortLabel
-                                active={orderBy === 'reserveTables'}
-                                direction={orderBy === 'reserveTables' ? order : 'asc'}
-                                sx={{
-                                    display: 'inline-flex',
-                                    justifyContent: 'center',
-                                    '& .MuiTableSortLabel-icon': {
-                                        margin: 0,
-                                        position: 'absolute',
-                                        right: '-20px',
-                                    }
-                                }}
-                            >
-                                <b>Số bàn dự trữ</b>
-                            </TableSortLabel>
-                        </TableCell>
-
-                        <TableCell align="center" onClick={() => handleRequestSort('status')}>
-                            <TableSortLabel
-                                active={orderBy === 'status'}
-                                direction={orderBy === 'status' ? order : 'asc'}
-                                sx={{
-                                    display: 'inline-flex',
-                                    justifyContent: 'center',
-                                    '& .MuiTableSortLabel-icon': {
-                                        margin: 0,
-                                        position: 'absolute',
-                                        right: '-20px',
-                                    }
-                                }}
-                            >
-                                <b>Trạng thái</b>
+                                <b>Loại hóa đơn</b>
                             </TableSortLabel>
                         </TableCell>
 
@@ -266,7 +219,7 @@ export default function PartyTable({
                 </TableHead>
                 
                 <TableBody>
-                    {sortedParties.map((party, index) => {
+                    {sortedBill.map((bill, index) => {
                         return (
                             <TableRow key={index} hover>
                                 {/* STT */}
@@ -283,112 +236,77 @@ export default function PartyTable({
                                 {/* Groom */}
                                 <TableCell
                                     sx={{
-                                        maxWidth: { xs: 80, md: 120, },
+                                        maxWidth: { xs: 120, md: 150, },
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                     }}
-                                    title={party.groom}
+                                    title={bill.groom}
                                 >
-                                    {party.groom}
+                                    {bill.groom}
                                 </TableCell>
 
                                 {/* Bride */}
                                 <TableCell
                                     sx={{
-                                        maxWidth: { xs: 80, md: 120, },
+                                        maxWidth: { xs: 120, md: 150, },
                                         whiteSpace: 'nowrap',
                                         overflow: 'hidden',
                                         textOverflow: 'ellipsis',
                                     }}
-                                    title={party.bride}
+                                    title={bill.bride}
                                 >
-                                    {party.bride}
+                                    {bill.bride}
                                 </TableCell>
 
-                                {/* Phone */}
+                                {/* Table Total Price */}
+                                <TableCell
+                                    align="center"
+                                    sx={{ width: "10%", }}
+                                >
+                                    {bill.tableTotalPrice.toLocaleString()}
+                                </TableCell>
+
+                                {/* Service Total Price */}
                                 <TableCell
                                     align="center"
                                     sx={{
-                                        width: "10%",
+                                        width: "12%",
                                     }}
-                                    title={party.phone}
                                 >
-                                    {party.phone}
+                                    {bill.serviceTotalPrice.toLocaleString()}
                                 </TableCell>
-
+                                
                                 {/* Date */}
                                 <TableCell
                                     align="center"
-                                    sx={{
-                                        width: "10%",
-                                    }}
+                                    sx={{ width: "12%", }}
                                 >
-                                    {party.date ? dayjs(party.date).format("DD/MM/YYYY") : ""}
-                                </TableCell>
-
-                                {/* Shift */}
-                                <TableCell
-                                    align="center"
-                                    sx={{
-                                        width: "5%",
-                                    }}
-                                >
-                                    <Box
-                                        sx={{
-                                            display: 'inline-flex',
-                                            paddingX: 1.5,
-                                            paddingY: 0.5,
-                                            borderRadius: 2,
-                                            fontWeight: 'bold',
-                                            backgroundColor: defaultBgColorMap[party.shift],
-                                            color: defaultTextColorMap[party.shift],
-                                        }}
-                                    >
-                                        {party.shift}
-                                    </Box>
-                                </TableCell>
-
-                                {/* Hall */}
-                                <TableCell
-                                    align="center"
-                                    sx={{ width: "10%" }}
-                                >
-                                    {party.hall}
+                                    {bill.date ? dayjs(bill.date).format("DD/MM/YYYY") : ""}
                                 </TableCell>
 
 
-                                {/* Deposit */}
+                                {/* Payment Amount */}
                                 <TableCell
                                     align="center"
                                     sx={{
                                         width: "10%",
                                     }}
                                 >
-                                    {party.deposit}
+                                    {bill.paymentAmount.toLocaleString()}
                                 </TableCell>
 
-                                {/* Tables */}
+                                {/* Penalty */}
                                 <TableCell
                                     align="center"
                                     sx={{
                                         width: "7%",
                                     }}
                                 >
-                                    {party.tables}
+                                    {bill.penalty.toLocaleString()}
                                 </TableCell>
 
-                                {/* Reserve tables */}
-                                <TableCell
-                                    align="center"
-                                    sx={{
-                                        width: "7%",
-                                    }}
-                                >
-                                    {party.reserveTables}
-                                </TableCell>
-
-                                {/* Status */}
+                                {/* Type */}
                                 <TableCell
                                     align="center"
                                     sx={{
@@ -402,11 +320,11 @@ export default function PartyTable({
                                             paddingY: 0.5,
                                             borderRadius: 2,
                                             fontWeight: 'bold',
-                                            backgroundColor: defaultBgColorMap[party.status],
-                                            color: defaultTextColorMap[party.status],
+                                            backgroundColor: defaultBgColorMap[bill.type],
+                                            color: defaultTextColorMap[bill.type],
                                         }}
                                     >
-                                        {party.status}
+                                        {bill.type}
                                     </Box>
                                 </TableCell>
 
@@ -414,35 +332,21 @@ export default function PartyTable({
                                 <TableCell
                                     align="center"
                                     sx={{
-                                        width: "10%",
+                                        width: "5%",
                                         padding: 0,
                                     }}
                                 >
                                     <IconButton size="small" sx={{ color: '#00b69b' }}
-                                        onClick={() => handleRead(party)}>
+                                        onClick={() => handleRead(bill)}>
                                         <Eye fontSize="small" />
                                     </IconButton>
-
-                                    <RoleBasedRender allow="NhanVien">
-                                        <IconButton size="small" sx={{ color: '#00d4ff' }}
-                                            onClick={() => handleEdit(party)}>
-                                            <EditOutlined fontSize="small" />
-                                        </IconButton>
-                                    </RoleBasedRender>
-
-                                    <RoleBasedRender allow="NhanVien">
-                                        <IconButton size="small" sx={{ color: '#ff0000' }}
-                                            onClick={() => handleDelete(party.id)}>
-                                            <DeleteOutline fontSize="small" />
-                                        </IconButton>
-                                    </RoleBasedRender>
                                 </TableCell>
                             </TableRow>
                         );
                     })}
-                    {sortedParties.length === 0 && (
+                    {sortedBill.length === 0 && (
                         <TableRow>
-                            <TableCell colSpan={12} align="center">
+                            <TableCell colSpan={10} align="center">
                                 Không tìm thấy "{searchKey}".
                             </TableCell>
                         </TableRow>

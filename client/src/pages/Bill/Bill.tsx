@@ -1,22 +1,13 @@
 import { useState, useEffect } from "react";
 import {
     Box,
-    Button,
     Typography,
     FormControl,
     Select,
     MenuItem,
-    Snackbar,
-    Alert,
 } from "@mui/material";
-import { PlusCircle, } from "lucide-react";
-import PartyTable from "./PartyTable";
-import { IParty } from "../../interfaces/party.interface";
-import ConfirmDelete from "../../components/Alert/ConfirmDelete";
-import ConfirmSaveInfo from "../../components/Alert/ConfirmSaveInfo";
-import ConfirmPay from "../../components/Alert/ConfirmPay";
-import ConfirmCancelParty from "../../components/Alert/ConfirmCancelParty";
-import PartyForm from "../../components/Form/PartyForm";
+import BillTable from "./BillTable";
+import { IBill } from "../../interfaces/bill.interface";
 import BillForm from "../../components/Form/BillForm";
 import PartyFilter from "../../components/Filter/PartyFilter";
 import SearchBar from "../../components/SearchBar"
@@ -24,89 +15,59 @@ import { DatePicker, } from '@mui/x-date-pickers';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import dayjs from 'dayjs';
-import { useNavigate } from "react-router-dom";
-import { RoleBasedRender } from "../../components/RoleBasedRender";
-import tieccuoiApi from "../../apis/tieccuoiApi";
+import hoadonApi from "../../apis/hoadonApis";
 
 
-type PartyKey = "groom" | "bride" | "phone" | "deposit" | "tables" | "reserveTables";
+type PartyKey = "groom" | "bride";
 
-export default function PartyPage() {
-    const navigate = useNavigate();
-
-    const [parties, setParties] = useState<IParty[]>([]);
+export default function BillPage() {
+    const [bills, setBills] = useState<IBill[]>([]);
     const [searchKey, setSearchKey] = useState("");
     const [searchBy, setSearchBy] = useState<PartyKey>("groom");
-    const [filterShift, setFilterShift] = useState("");
-    const [filterHall, setFilterHall] = useState("");
+    const [filterType, setFilterType] = useState("");
     const [fromDate, setFromDate] = useState(dayjs().subtract(1, "month").toISOString());
     const [toDate, setToDate] = useState(dayjs().add(5, 'year').toISOString());
 
-    const [isPartyFormOpen, setIsPartyFormOpen] = useState(false);
     const [isBillFormOpen, setIsBillFormOpen] = useState(false);
-    const [isReadOnlyForm, setIsReadOnlyForm] = useState(false);
-    const [editData, setEditData] = useState<IParty | null>(null);
-    const [billPartyData, setBillPartyData] = useState<IParty | null>(null);
+    const [billPartyData, setBillPartyData] = useState<IBill | null>(null);
 
-    const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
-    const [deleteId, setDeleteId] = useState(null);
-    const [isSaveInfoConfirmOpen, setIsSaveInfoConfirmOpen] = useState(false);
-    const [isPayConfirmOpen, setIsPayConfirmOpen] = useState(false);
-    const [isCancelPartyConfirmOpen, setIsCancelPartyConfirmOpen] = useState(false);
-    
-    const [successMessage, setSuccessMessage] = useState('');
-    const [openSnackbar, setOpenSnackbar] = useState(false);
-
-    const fetchParties = async () => {
+    const fetchBills = async () => {
         try {
-            const data = await tieccuoiApi.getAll();
+            const data = await hoadonApi.getAll();
 
             const mapped = data.map((item: any) => ({
-                code: item.MATIEC,
                 id: item._id,
                 groom: item.TENCR,
                 bride: item.TENCD,
-                phone: item.SDT,
-                shift: item.CA,
-                hall: item.TENSANH,
-                hallType: item.LOAISANH,
-                date: item.NGAYDAI,
-                deposit: item.TIENCOC,
-                tables: item.SOLUONGBAN,
-                reserveTables: item.SOBANDT,
-                status: item.TRANGTHAI || "Đã đặt cọc",
+                tableTotalPrice: item.TIENBAN,
+                serviceTotalPrice: item.TIENDICHVU,
+                date: item.NGAYTHANHTOAN,
+                paymentAmount: item.SOTIENHOADON,
+                penalty: item.TIENPHAT,
+                type: item.LOAIHOADON,
             }));
 
-            setParties(mapped);
+            setBills(mapped);
         } catch (err) {
             console.error("Lỗi khi fetch tiệc cưới:", err);
         }
     };
 
     useEffect(() => {
-        fetchParties(); // tải danh sách tiệc cưới ban đầu
-        console.log('date: ' + dayjs('2025-07-11T17:00:00.000Z'))
+        fetchBills(); // tải danh sách hóa đơn
     }, []);
 
-    useEffect(() => {
-        if (openSnackbar) {
-            const timer = setTimeout(() => setOpenSnackbar(false), 2000);
-            return () => clearTimeout(timer);
-        }
-    }, [openSnackbar]);
-
-    const filteredParties = parties.filter((party) => {
-        const partyDate = dayjs(party.date);
+    const filteredBills = bills.filter((bill) => {
+        const billDate = dayjs(bill.date);
         const from = dayjs(fromDate);
         const to = dayjs(toDate);
 
-        const matchesDate = partyDate.isAfter(from.subtract(1, 'day')) && partyDate.isBefore(to.add(1, 'day'));
-        const matchesShift = filterShift ? party.shift === filterShift : true;
-        const matchesHall = filterHall ? party.hallType === filterHall : true;
+        const matchesDate = billDate.isAfter(from.subtract(1, 'day')) && billDate.isBefore(to.add(1, 'day'));
+        const matchesType = filterType ? bill.type === filterType : true;
 
         let matchesSearch = true;
         if (searchKey) {
-            const value = party[searchBy];
+            const value = bill[searchBy];
             if (typeof value === "number") {
                 matchesSearch = value === Number(searchKey);
             } else {
@@ -114,24 +75,12 @@ export default function PartyPage() {
             }
         }
 
-        return matchesDate && matchesShift && matchesHall && matchesSearch;
+        return matchesDate && matchesSearch && matchesType;
     });
 
-    const handleRead = (party: IParty) => {
-        setIsReadOnlyForm(true);
-        setEditData(party);
-        setIsPartyFormOpen(true);
-    };
-
-    const handleEdit = (party: IParty) => {
-        setIsReadOnlyForm(false);
-        setEditData(party);
-        setIsPartyFormOpen(true);
-    };
-
-    const handleDelete = (id: any) => {
-        setDeleteId(id);
-        setIsDeleteConfirmOpen(true);
+    const handleRead = (bill: IBill) => {
+        setBillPartyData(bill);
+        setIsBillFormOpen(true);
     };
 
     return (
@@ -153,7 +102,7 @@ export default function PartyPage() {
                     marginX: "20px",
                 }}
             >
-                Danh sách tiệc cưới
+                Danh sách hóa đơn
             </Typography>
 
             <Box
@@ -220,34 +169,16 @@ export default function PartyPage() {
                             <MenuItem value="bride">
                                 Tên cô dâu
                             </MenuItem>
-                            <MenuItem value="phone">
-                                Số điện thoại
-                            </MenuItem>
-                            <MenuItem value="deposit">
-                                Tiền cọc
-                            </MenuItem>
-                            <MenuItem value="tables">
-                                Số lượng bàn
-                            </MenuItem>
-                            <MenuItem value="reserveTables">
-                                Số bàn dự trữ
-                            </MenuItem>
                         </Select>
                     </FormControl>
 
                     <PartyFilter
-                        label="Chọn ca"
-                        value={filterShift}
-                        onChange={(e) => setFilterShift(e.target.value)}
-                        children={["Trưa", "Tối"]}
+                        label="Chọn loại"
+                        value={filterType}
+                        onChange={(e) => setFilterType(e.target.value)}
+                        children={["Đặt cọc", "Thanh toán"]}
                     />
 
-                    <PartyFilter
-                        label="Chọn loại sảnh"
-                        value={filterHall}
-                        onChange={(e) => setFilterHall(e.target.value)}
-                        children={["A", "B", "C", "D", "E"]}
-                    />
 
                     <LocalizationProvider dateAdapter={AdapterDayjs}>
                         <Box sx={{
@@ -416,161 +347,22 @@ export default function PartyPage() {
                         </Box>
                     </LocalizationProvider>
                 </Box>
-
-                <RoleBasedRender allow="NhanVien">
-                    <Button
-                        variant="contained"
-                        startIcon={<PlusCircle />}
-                        onClick={() => navigate("/dat-tiec")}
-                        sx={{
-                            alignSelf: 'flex-end',
-                            padding: '10px 30px',
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                            borderRadius: '8px',
-                            backgroundColor: "#4880FF",
-                            "&:hover": {
-                                backgroundColor: "#3578f0",
-                            },
-                            textTransform: "none",
-                        }}
-                    >
-                        Đặt tiệc
-                    </Button>
-                </RoleBasedRender>
             </Box>
 
             {/* Table */}
-            <PartyTable
-                data={filteredParties}
+            <BillTable
+                data={filteredBills}
                 searchKey={searchKey}
                 handleRead={handleRead}
-                handleEdit={handleEdit}
-                handleDelete={handleDelete}
             />
 
-            {/* Form + ConfirmDelete */}
-            <PartyForm
-                open={isPartyFormOpen}
-                onClose={() => setIsPartyFormOpen(false)}
-                onUpdate={(data) => {
-                    setIsSaveInfoConfirmOpen(true);
-                    setEditData(data);
-                }}
-
-                onPay={() => { setIsPayConfirmOpen(true) }}
-
-                onCancel={() => { setIsCancelPartyConfirmOpen(true) }}
-
-                initialData={editData}
-                readOnly={isReadOnlyForm}
-            />
-
+            {/* Form */}
             <BillForm
                 open={isBillFormOpen}
                 onClose={() => setIsBillFormOpen(false)}
                 initialData={billPartyData}
                 readOnly={true}
             />
-
-            <ConfirmDelete
-                open={isDeleteConfirmOpen}
-                onClose={() => setIsDeleteConfirmOpen(false)}
-                onConfirm={async () => {
-                    if (!deleteId) return;
-
-                    try {
-                        await tieccuoiApi.delete(deleteId);
-                        await fetchParties(); // load lại danh sách
-                        setSuccessMessage('Xóa tiệc thành công');
-                        setOpenSnackbar(true);
-                    } catch (err) {
-                        console.error("Lỗi khi xóa:", err);
-                        alert("Xóa thất bại, vui lòng thử lại.");
-                    } finally {
-                        setIsDeleteConfirmOpen(false);
-                        setDeleteId(null);
-                    }
-                }}
-            />
-
-            <ConfirmSaveInfo
-                open={isSaveInfoConfirmOpen}
-                onClose={() => setIsSaveInfoConfirmOpen(false)}
-                onConfirm={async () => {
-                    if (!editData) return;
-
-                    try {
-                        const payload = {
-                            TENCR: editData.groom,
-                            TENCD: editData.bride,
-                            SDT: editData.phone,
-                        };
-
-                        await tieccuoiApi.update(editData.id, payload);
-                        await fetchParties(); // load lại danh sách
-                        setSuccessMessage('Cập nhật thông tin thành công');
-                        setOpenSnackbar(true);
-                        setIsPartyFormOpen(false);
-                    } catch (err) {
-                        console.error("Lỗi khi sửa:", err);
-                        alert("Sửa thất bại, vui lòng thử lại.");
-                    } finally {
-                        setIsSaveInfoConfirmOpen(false);
-                    }
-                }}
-            />
-
-            <ConfirmPay
-                open={isPayConfirmOpen}
-                onClose={() => setIsPayConfirmOpen(false)}
-                onConfirm={async () => {
-                    if (!editData) return;
-
-                    try {
-                        await tieccuoiApi.pay(editData.id);
-                        setSuccessMessage('Thanh toán thành công');
-                        setOpenSnackbar(true);
-                        await fetchParties(); // load lại danh sách
-                        setBillPartyData(editData);
-                        setIsPartyFormOpen(false);
-                        setIsBillFormOpen(true);
-                    } catch (err) {
-                        console.error("Lỗi khi thanh toán:", err);
-                        alert("Thanh toán thất bại, vui lòng thử lại.");
-                    } finally {
-                        setIsPayConfirmOpen(false);
-                    }
-                }}
-            />
-
-            <ConfirmCancelParty
-                open={isCancelPartyConfirmOpen}
-                onClose={() => setIsCancelPartyConfirmOpen(false)}
-                onConfirm={async () => {
-                    if (!editData) return;
-
-                    try {
-                        await tieccuoiApi.pay(editData.id);
-                        setSuccessMessage('Hủy tiệc thành công');
-                        setOpenSnackbar(true);
-                        await fetchParties(); // load lại danh sách
-                        setIsPartyFormOpen(false);
-                    } catch (err) {
-                        console.error("Lỗi khi hủy tiệc:", err);
-                        alert("Hủy tiệc thất bại, vui lòng thử lại.");
-                    } finally {
-                        setIsCancelPartyConfirmOpen(false);
-                    }
-                }}
-            />
-
-            <Snackbar open={openSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center', }}>
-                <Alert severity="success" sx={{ width: '100%', borderRadius: '10px' }}>
-                    {successMessage}
-                </Alert>
-            </Snackbar>
-
         </Box>
     );
 }

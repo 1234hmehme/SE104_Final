@@ -8,7 +8,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ServiceAddDialog from './ServiceAddDialog.tsx';
 import ServiceEditDialog from './ServiceEditDialog.tsx';
-import ConfirmDelete from '../../components/Alert/ConfirmDelete/ConfirmDelete';
+import ConfirmDelete from '../../components/Alert/ConfirmDelete.tsx';
 import ServiceDetailMenu from '../../components/Menu/ServiceDetailMenu';
 import PetalAnimation from '../../components/Animations/PetalAnimation';
 import SearchBar from '../../components/SearchBar';

@@ -6,8 +6,6 @@ import {
     DialogActions,
     Button,
     Box,
-    Select,
-    MenuItem,
     Typography,
     FormControl,
 } from "@mui/material";
@@ -18,28 +16,29 @@ import { defaultBgColorMap, defaultTextColorMap } from "../../assets/color/Color
 export default function PartyForm({
     open,
     onClose,
-    onSubmit,
-    onExportBill,
+    onUpdate,
+    onPay,
+    onCancel,
     initialData,
     readOnly,
-    hallName,
 }: {
     open: boolean;
     onClose: () => void;
-    onSubmit: (data: any) => void;
-    onExportBill: (partyData: any) => void;
+    onUpdate: (data: any) => void;
+    onPay: () => void;
+    onCancel: (partyId: any) => void;
     initialData?: any;
     readOnly: boolean;
-    hallName: string;
 }) {
     const [form, setForm] = useState({
-        id: 0,
+        id: "",
         groom: "",
         bride: "",
         phone: "",
         date: "",
         shift: "",
         hall: "",
+        hallType: "A",
         deposit: 0,
         tables: 0,
         reserveTables: 0,
@@ -49,13 +48,14 @@ export default function PartyForm({
     useEffect(() => {
         if (initialData) setForm(initialData);
         else setForm({
-            id: 0,
+            id: "",
             groom: "",
             bride: "",
             phone: "",
             date: "",
             shift: "",
             hall: "",
+            hallType: "A",
             deposit: 0,
             tables: 0,
             reserveTables: 0,
@@ -70,7 +70,7 @@ export default function PartyForm({
     // Số ngày trễ (làm tròn lên)
     const daysLate = Math.max(0, Math.ceil((now.getTime() - eventDate.getTime()) / oneDayMs));
     // Tiền phạt = 1% mỗi ngày trễ trên tổng tiền
-    const penalty = daysLate * 0.01 * form.deposit * 10;
+    const penalty = (daysLate - 1) * 0.01 * form.deposit * 10;
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth
@@ -194,7 +194,7 @@ export default function PartyForm({
                             </Typography>
                             <TextField
                                 fullWidth
-                                value={hallName}
+                                value={form.hall}
                                 disabled={true} />
                         </FormControl>
                     </Box>
@@ -243,48 +243,18 @@ export default function PartyForm({
                             Trạng thái
                         </Typography>
 
-                        <Box sx={{ display: 'flex', gap: '20px', marginTop: '10px' }}>
-                            {!readOnly && initialData?.status == 'Đã đặt cọc' ?
-                                ['Đã đặt cọc', 'Đã thanh toán', 'Đã huỷ'].map((status) =>
-                                    <Box
-                                        onClick={() => {
-                                            setForm({ ...form, status: status })
-                                        }}
-                                        sx={[{
-                                            width: 'fit-content',
-                                            padding: '5px 30px',
-                                            fontSize: "14px",
-                                            fontWeight: "bold",
-                                            borderRadius: '8px',
-                                            borderColor: defaultTextColorMap[status],
-                                            color: defaultTextColorMap[status],
-                                            textTransform: "none",
-                                            cursor: 'pointer',
-                                        }, form.status == status ? {
-                                            backgroundColor: defaultBgColorMap[status],
-                                        } : {
-                                            borderWidth: '1px',
-                                            borderStyle: 'solid',
-                                        }]}
-                                    >
-                                        {status}
-                                    </Box>
-                                )
-                                :
-                                <Box sx={{
-                                    width: 'fit-content',
-                                    padding: '5px 30px',
-                                    fontSize: "14px",
-                                    fontWeight: "bold",
-                                    borderRadius: '8px',
-                                    backgroundColor: defaultBgColorMap[form.status],
-                                    color: defaultTextColorMap[form.status],
-                                    textTransform: "none",
-                                }}>
-                                    {form.status}
-                                </Box>
-
-                            }
+                        <Box sx={{
+                            width: 'fit-content',
+                            padding: '5px 30px',
+                            marginTop: '10px',
+                            fontSize: "14px",
+                            fontWeight: "bold",
+                            borderRadius: '8px',
+                            backgroundColor: defaultBgColorMap[form.status],
+                            color: defaultTextColorMap[form.status],
+                            textTransform: "none",
+                        }}>
+                            {form.status}
                         </Box>
                     </Box>
 
@@ -319,37 +289,58 @@ export default function PartyForm({
                     alignSelf: 'center',
                     paddingTop: '16px',
                     paddingBottom: '0px',
-                    gap: '10px',
+                    gap: '20px',
                 }}>
-                    <Button onClick={onClose}
-                        sx={{
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                            color: 'var(--text-color)',
-                            textTransform: "none",
-                        }}
-                    >
-                        Huỷ
-                    </Button>
-
                     <Button
                         variant="contained"
-                        color="success"
                         onClick={() => {
                             console.log("DỮ LIỆU GỬI LÊN:", form); // ✅ thêm dòng này
-
-                            onSubmit(form);
+                            onUpdate(form);
                         }}
                         sx={{
                             fontSize: "14px",
                             fontWeight: "bold",
                             borderRadius: '8px',
-                            backgroundColor: "#4caf50",
+                            backgroundColor: defaultBgColorMap['Đã đặt cọc'],
+                            color: defaultTextColorMap['Đã đặt cọc'],
                             textTransform: "none",
                         }}
                     >
-                        Lưu
+                        Lưu thông tin
                     </Button>
+                    {form.status === 'Đã đặt cọc' &&
+                        <>
+                            <Button
+                                variant="contained"
+                                onClick={() => onPay()}
+                                sx={{
+                                    fontSize: "14px",
+                                    fontWeight: "bold",
+                                    borderRadius: '8px',
+                                    backgroundColor: defaultBgColorMap['Đã thanh toán'],
+                                    color: defaultTextColorMap['Đã thanh toán'],
+                                    textTransform: "none",
+                                }}
+                            >
+                                Thanh toán
+                            </Button>
+
+                            <Button
+                                variant="contained"
+                                onClick={() => onCancel(form.id)}
+                                sx={{
+                                    fontSize: "14px",
+                                    fontWeight: "bold",
+                                    borderRadius: '8px',
+                                    backgroundColor: defaultBgColorMap['Đã huỷ'],
+                                    color: defaultTextColorMap['Đã huỷ'],
+                                    textTransform: "none",
+                                }}
+                            >
+                                Hủy tiệc
+                            </Button>
+                        </>
+                    }
                 </DialogActions>
             }
         </Dialog>

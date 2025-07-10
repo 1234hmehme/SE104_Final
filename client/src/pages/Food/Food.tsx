@@ -5,7 +5,7 @@ import { Button, Box, Typography } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import DeleteOutline from '@mui/icons-material/DeleteOutline';
 import FoodAddDialog from './FoodAddDialog.tsx';
-import ConfirmDelete from '../../components/Alert/ConfirmDelete/ConfirmDelete';
+import ConfirmDelete from '../../components/Alert/ConfirmDelete.tsx';
 import EditIcon from '@mui/icons-material/Edit';
 import FoodEditDialog from './FoodEditDialog.tsx';
 import PetalAnimation from '../../components/Animations/PetalAnimation';

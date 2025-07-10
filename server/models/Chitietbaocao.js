@@ -20,12 +20,6 @@ const ChitietbaocaoSchema = new mongoose.Schema({
     required: true,
     min: 0
   },
-  TyLe: {
-    type: Number,
-    required: true,
-    min: 0,
-    max: 100
-  }
 });
 
 const Chitietbaocao = mongoose.model('Chitietbaocao', ChitietbaocaoSchema);

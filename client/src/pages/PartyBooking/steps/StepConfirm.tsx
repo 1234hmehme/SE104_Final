@@ -3,7 +3,9 @@ import { useFormContext } from "react-hook-form";
 import { formatDate } from "../../../utils/formatDate";
 import { IFoodBooking } from "../../../interfaces/food.interface";
 import { IServiceBooking } from "../../../interfaces/service.interface";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { Alert, Snackbar } from "@mui/material";
+import tieccuoiApi from "../../../apis/tieccuoiApi";
 
 export default function StepConfirm() {
     const { watch, getValues, reset } = useFormContext();
@@ -18,28 +20,17 @@ export default function StepConfirm() {
     const servicesPrice = selectedServices.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalBill = totalTablesPrice + servicesPrice;
 
+    const [successMessage, setSuccessMessage] = useState('');
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+
     // Hàm xử lý đặt tiệc
     const handleCreateParty = async () => {
-    setLoading(true);
-    setSuccess(false);
-    const data = getValues();
-    
-    console.log("Dữ liệu gửi lên backend:", {
-        TENCR: data.groom,
-        TENCD: data.bride,
-        SDT: data.phone,
-        MASANH: data.hall?.id || data.hall?.MASANH,
-        NGAYDAI: data.date,
-        CA: data.shift,
-        SOLUONGBAN: data.tables,
-        SOBANDT: data.reserveTables, // cập nhật đúng số bàn dự trữ
-        TIENCOC: totalBill * 0.1,
-    });
-    try {
-        const res = await fetch("http://localhost:3000/api/tieccuoi", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
+        setLoading(true);
+        setSuccess(false);
+        const data = getValues();
+
+        try {
+            const payload = {
                 TENCR: data.groom,
                 TENCD: data.bride,
                 SDT: data.phone,
@@ -51,21 +42,41 @@ export default function StepConfirm() {
                 TIENCOC: totalBill * 0.1,
                 foods: data.foods,
                 services: data.services,
-            }),
-        });
-        if (res.ok) {
+            };
+
+            await tieccuoiApi.create(payload);
             setSuccess(true);
             reset();
-            alert("Đặt tiệc thành công!");
-        } else {
-            alert("Đặt tiệc thất bại!");
+            setSuccessMessage('Đặt tiệc thành công');
+            setOpenSnackbar(true);
+        } catch (err) {
+            console.error("Lỗi khi đặt tiệc:", err);
+            setSuccessMessage('Đặt tiệc thất bại, vui lòng thử lại.');
+            setOpenSnackbar(true);
+        } finally {
+            //   setIsSaveInfoConfirmOpen(false);
         }
-    } catch (err) {
-        alert("Có lỗi xảy ra!");
-    }
-    setLoading(false);
-};
-    console.log("hall object:", watch("hall"));
+        console.log("Dữ liệu gửi lên backend:", {
+            TENCR: data.groom,
+            TENCD: data.bride,
+            SDT: data.phone,
+            MASANH: data.hall?.id || data.hall?.MASANH,
+            NGAYDAI: data.date,
+            CA: data.shift,
+            SOLUONGBAN: data.tables,
+            SOBANDT: data.reserveTables, // cập nhật đúng số bàn dự trữ
+            TIENCOC: totalBill * 0.1,
+        });
+        setLoading(false);
+    };
+
+    useEffect(() => {
+        if (openSnackbar) {
+            const timer = setTimeout(() => setOpenSnackbar(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [openSnackbar]);
+
     return (
         <Box
             sx={{
@@ -112,7 +123,7 @@ export default function StepConfirm() {
                     <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>Số điện thoại:</Typography>
                     <Typography sx={{ fontSize: '16px' }}>{watch("phone")}</Typography>
                 </Box>
-                
+
                 <Box sx={{ display: 'flex', gap: '10px', width: '30%' }}>
                     <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>Sảnh:</Typography>
                     <Typography sx={{ fontSize: '16px' }}>{watch("hall")?.name}</Typography>
@@ -245,6 +256,12 @@ export default function StepConfirm() {
                     Đặt tiệc thành công!
                 </Typography>
             )}
+
+            <Snackbar open={openSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center', }}>
+                <Alert severity={success ? 'success' : 'error'} sx={{ width: '100%', borderRadius: '10px' }}>
+                    {successMessage}
+                </Alert>
+            </Snackbar>
         </Box>
     );
 }

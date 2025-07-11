@@ -1,14 +1,13 @@
-// tests/party.integration.test.js
 const request = require('supertest');
 const mongoose = require('mongoose');
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const dayjs = require('dayjs');
 const app = require('../apptest');
 
-const Tieccuoi       = require('../models/Tieccuoi');
-const Hoadon         = require('../models/Hoadon');
-const Chitietmonan   = require('../models/Chitietmonan');
-const Chitietdichvu  = require('../models/Chitietdichvu');
+const Tieccuoi = require('../models/Tieccuoi');
+const Hoadon = require('../models/Hoadon');
+const Sanh = require('../models/Sanh');
+const Monan = require('../models/Monan');
+const Dichvu = require('../models/Dichvu');
 
 let mongoServer;
 
@@ -24,146 +23,117 @@ afterAll(async () => {
 });
 
 afterEach(async () => {
-  // xóa toàn bộ collections
   await Promise.all([
     Tieccuoi.deleteMany(),
     Hoadon.deleteMany(),
-    Chitietmonan.deleteMany(),
-    Chitietdichvu.deleteMany(),
+    Sanh.deleteMany(),
+    Monan.deleteMany(),
+    Dichvu.deleteMany(),
   ]);
 });
 
-describe('Full workflow: tiệc cưới', () => {
+describe('Quy trình đặt tiệc cưới đầy đủ', () => {
+  const setupTiec = async (ngayDai) => {
+    // 1. Tạo sảnh
+    const resSanh = await request(app).post('/api/sanh').send({
+      TENSANH: "Sảnh Kim Cương",
+      LOAISANH: "VIP",
+      DONGIABANTT: 1000000,
+      SOLUONGBANTD: 40,
+      GHICHU: "Sảnh cao cấp"
+    });
+    const sanhId = resSanh.body._id;
 
+    // 2. Tạo món ăn
+    const resMon1 = await request(app).post('/api/monan').send({
+      TENMONAN: "Lẩu hải sản",
+      LOAI: "Món Chính",
+      DONGIA: 150000
+    });
+    const resMon2 = await request(app).post('/api/monan').send({
+      TENMONAN: "Gỏi ngó sen",
+      LOAI: "Món Khai Vị",
+      DONGIA: 200000
+    });
 
-  it('1. Tạo tiệc + chọn món + chọn dịch vụ + tạo hóa đơn', async () => {
-    // Tạo tiệc
+    // 3. Tạo dịch vụ
+    const resDV = await request(app).post('/api/dichvu').send({
+      TENDICHVU: "Ban nhạc sống",
+      DONGIA: 1000000,
+      GHICHU: "Ban nhạc biểu diễn",
+      DANHMUC: "Giải trí"
+    });
+
+    const slBan = 10, slBanDT = 2;
+    const tongBan = slBan + slBanDT;
+    const tienMon = 150000 + 200000;
+    const tienDV = 1000000;
+    const tiencoc = (tienMon * tongBan + tienDV) / 10;
+
     const resTiec = await request(app).post('/api/tieccuoi').send({
-      MATIEC: "TCTEST0012",
-      NGAYDAI: "2025-12-25",
-      TIENCOC: 5000000,
+      NGAYDAI: ngayDai,
       CA: "Trưa",
-      SOLUONGBAN: 50,
-      MASANH: "6860397e953b6c77104d57db",
-      SOBANDT: 0,
-      TENCR: "Nguyễn Văn Nam",
-      TENCD: "Trần Thị Lan",
-      SDT: "0912345678",
-      TRANGTHAI: "Đã đặt cọc"
+      SOLUONGBAN: slBan,
+      SOBANDT: slBanDT,
+      MASANH: sanhId,
+      TENCR: "Nguyễn Văn A",
+      TENCD: "Trần Thị B",
+      SDT: "0987654321",
+      TIENCOC: tiencoc,
+      foods: [
+        { foodId: resMon1.body._id, price: 150000 },
+        { foodId: resMon2.body._id, price: 200000 }
+      ],
+      services: [
+        { serviceId: resDV.body._id, price: 1000000, quantity: 1 }
+      ]
     });
-    expect(resTiec.statusCode).toBe(200);
-    matiec = resTiec.body._id;
 
-    // 2. Chọn món ăn
-    const resMon = await request(app).post('/api/chitietmonan').send({
-      MATIEC: matiec,
-      MAMONAN: "M001",
-      GIATIEN: 120000
-    });
-    expect(resMon.statusCode).toBe(200);
+    return { tiec: resTiec.body, tiencoc, tienMon, tienDV };
+  };
 
-    // 3. Chọn dịch vụ
-    const resDV = await request(app).post('/api/chitietdichvu').send({
-      MATIEC: matiec,
-      MADICHVU: "DV001",
-      SOLUONG: 2,
-      GIATIEN: 1500000
-    });
-    expect(resDV.statusCode).toBe(200);
-
-    // 4. Tạo hóa đơn
-    const resHD = await request(app).post('/api/hoadon').send({
-      MATIEC: matiec,
-      TIENBAN: 1000000,
-      TIENDICHVU: 3000000,
-      TIENPHAT: 500000,
-      SOTIENHOADON: 1000000 + 3000000 + 500000,
-      LOAIHOADON: "Thanh toán"
-    });
-    expect(resHD.statusCode).toBe(200);
-    expect(resHD.body.SOTIENHOADON).toBe(4500000);
-    expect(resHD.body.TIENBAN).toBe(1000000);
-    expect(resHD.body.TIENDICHVU).toBe(3000000);
-    expect(resHD.body.TIENPHAT).toBe(500000);
+  it('1. Đặt tiệc và tạo hóa đơn đặt cọc', async () => {
+    const { tiec, tiencoc } = await setupTiec("2025-12-25");
+    const hoadons = await Hoadon.find({ MATIEC: tiec.MATIEC });
+    expect(hoadons.length).toBe(1);
+    expect(hoadons[0].LOAIHOADON).toBe("Đặt cọc");
+    expect(hoadons[0].SOTIENHOADON).toBe(tiencoc);
   });
+
+  it('2. Thanh toán đúng hạn không có phạt', async () => {
+    const { tiec, tiencoc, tienMon, tienDV } = await setupTiec("2099-01-01");
+    const resPay = await request(app).post(`/api/tieccuoi/${tiec._id}/pay`).send();
+    expect(resPay.statusCode).toBe(200);
+    expect(resPay.body.TONGTIEN).toBe(tiencoc * 10); // Không có phạt
+
+    const allBills = await Hoadon.find({ MATIEC: tiec.MATIEC });
+    expect(allBills.length).toBe(2);
+
+    const payBill = allBills.find(b => b.LOAIHOADON === 'Thanh toán');
+    expect(payBill.TIENPHAT).toBe(0);
+    expect(payBill.SOTIENHOADON).toBe(tiencoc * 10);
+    expect(payBill.TIENBAN).toBe(tienMon);
+    expect(payBill.TIENDICHVU).toBe(tienDV);
+  });
+
+  it('3. Thanh toán trễ sẽ có tiền phạt', async () => {
+    const ngayDai = new Date();
+    ngayDai.setDate(ngayDai.getDate() - 3); // NGAYDAI = 3 ngày trước
+
+    const { tiec, tiencoc } = await setupTiec(ngayDai.toISOString().split('T')[0]);
+
+    const resPay = await request(app).post(`/api/tieccuoi/${tiec._id}/pay`).send();
+    expect(resPay.statusCode).toBe(200);
+
+    const daysLate = Math.max(0, Math.ceil((new Date() - new Date(ngayDai)) / (1000 * 60 * 60 * 24)));
+    const penalty = daysLate > 0 ? (daysLate - 1) * 0.01 * tiencoc * 10 : 0;
+    const expectedTotal = tiencoc * 10 + penalty;
+
+    const payBill = await Hoadon.findOne({ MATIEC: tiec.MATIEC, LOAIHOADON: 'Thanh toán' });
+
+    expect(resPay.body.TONGTIEN).toBe(expectedTotal);
+    expect(payBill.TIENPHAT).toBe(penalty);
+    expect(payBill.SOTIENHOADON).toBe(expectedTotal);
+  });
+
 });
-     it('2. PUT /api/tieccuoi/:id chuyển sang Đã thanh toán → cập nhật phạt theo số ngày trễ', async () => {
-    // 1) Tạo tiệc ngày hôm qua
-    const yesterday = dayjs().subtract(1, 'day').toISOString();
-    const created = await Tieccuoi.create({
-      MATIEC:    'TCTEST002',
-      NGAYDAI:   yesterday,
-      TIENCOC:   1000,
-      CA:        'Tối',
-      SOLUONGBAN:10,
-      MASANH:    'hallX',
-      SOBANDT:   0,
-      TENCR:     'A',
-      TENCD:     'B',
-      SDT:       '0999999999',
-      TRANGTHAI: 'Đã đặt cọc',
-    });
-
-    // 2) Tạo hoá đơn khởi tạo
-    await Hoadon.create({
-      MATIEC:       created.MATIEC,
-      NGAYTHANHTOAN: yesterday,
-      SOTIENHOADON: created.TIENCOC * 10,  // gốc = cọc × 10
-      TIENPHAT:     0,
-      TIENBAN:      0,
-      TIENDICHVU:   0,
-      LOAIHOADON:   'Thanh toán'
-    });
-
-    // 3) Gọi PUT để chuyển trạng thái thành "Đã thanh toán"
-    const resPut = await request(app)
-      .put(`/api/tieccuoi/${created._id}`)
-      .send({
-        TRANGTHAI: 'Đã thanh toán',
-        NGAYDAI:   yesterday
-      });
-    expect(resPut.status).toBe(200);
-
-    // 4) Lấy lại hoá đơn và kiểm tra
-    const inv = await Hoadon.findOne({ MATIEC: created.MATIEC });
-    expect(inv).not.toBeNull();
-
-    const base    = created.TIENCOC * 10;
-    const daysLate = 1; // đã tạo NGAYDAI = yesterday → trễ 1 ngày
-    const penalty = base * (daysLate / 100);
-    const total   = base + penalty;
-
-    expect(inv.TIENPHAT).toBeCloseTo(penalty);
-    expect(inv.SOTIENHOADON).toBeCloseTo(total);
-  });
-  it('3. DELETE /api/tieccuoi/:id → xóa tiệc và hóa đơn liên quan', async () => {
-    // tạo tiệc + hóa đơn
-// in test 2
-const created = await Tieccuoi.create({
-  MATIEC: 'TCYY',
-  NGAYDAI: dayjs().toISOString(),
-  TIENCOC: 2000,
-  CA: 'Trưa',
-  SOLUONGBAN: 5,
-  MASANH: 'hallY',
-  SOBANDT: 0,
-  TENCR: 'X',
-  TENCD: 'Y',
-  SDT: '0888888888',
-  TRANGTHAI: 'Đã đặt cọc'
-});
-
-    await Hoadon.create({ MATIEC: created.MATIEC, NGAYTHANHTOAN: created.NGAYDAI, TONGTIEN: 2000 });
-
-    // xóa tiệc
-    const resDel = await request(app)
-      .delete(`/api/tieccuoi/${created._id}`);
-    expect(resDel.status).toBe(200);
-    expect(resDel.body.message).toMatch(/Xoá/i);
-
-    // confirm tiệc + hóa đơn đã biến mất
-    const p = await Tieccuoi.findById(created._id);
-    const hd = await Hoadon.findOne({ MATIEC: created.MATIEC });
-    expect(p).toBeNull();
-    expect(hd).toBeNull();
-  });

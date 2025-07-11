@@ -24,6 +24,10 @@ const SanhSchema = new mongoose.Schema({
   HINHANH: {
     type: String,
     default: ""
+  },
+  HINHANH_ID: {
+    type: String,
+    default: ""
   }
 })
 

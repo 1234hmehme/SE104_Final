@@ -2,9 +2,7 @@ const sanhServices = require('../services/sanhServices');
 
 exports.create = async (req, res) => {
   try {
-    const data = req.body;
-    if (req.file?.path) data.HINHANH = req.file.path;
-    const result = await sanhServices.create(data);
+    const result = await sanhServices.create(req.body, req.file);
     res.status(200).json(result);
   } catch (err) {
     console.error('❌ Lỗi tạo sảnh:', err);
@@ -24,9 +22,7 @@ exports.getAll = async (req, res) => {
 
 exports.update = async (req, res) => {
   try {
-    const data = req.body;
-    if (req.file?.path) data.HINHANH = req.file.path;
-    const result = await sanhServices.update(req.params.id, data);
+    const result = await sanhServices.update(req.params.id, req.body, req.file);
     res.status(200).json(result);
   } catch (err) {
     console.error('❌ Lỗi cập nhật sảnh:', err);

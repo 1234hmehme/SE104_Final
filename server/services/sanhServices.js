@@ -1,6 +1,4 @@
 const Sanh = require('../models/Sanh');
-const Tieccuoi = require('../models/Tieccuoi');
-const Hoadon = require('../models/Hoadon');
 const cloudinary = require('cloudinary').v2;
 
 exports.create = async (data, file) => {
@@ -14,7 +12,7 @@ exports.create = async (data, file) => {
 };
 
 exports.getAll = async () => {
-    return await Sanh.find();
+    return await Sanh.find({ IS_DELETED: false });
 };
 
 exports.update = async (id, updateData, file) => {
@@ -22,7 +20,7 @@ exports.update = async (id, updateData, file) => {
     if (!sanh) throw new Error('Sảnh không tồn tại');
 
     if (file) {
-        if (sanh.HINHANH_ID) {
+        if (sanh.HINHANH_ID !== "") {
             await cloudinary.uploader.destroy(sanh.HINHANH_ID);
         }
 
@@ -36,22 +34,14 @@ exports.update = async (id, updateData, file) => {
 };
 
 exports.remove = async (hallId) => {
-    const parties = await Tieccuoi.find({ MASANH: hallId }).select('MATIEC');
-    const partyCodes = parties.map(p => p.MATIEC);
-
-    const deletedHall = await Sanh.findByIdAndDelete(hallId);
+    const deletedHall = await Sanh.findById(hallId);
     if (!deletedHall) throw new Error('Sảnh không tồn tại');
 
-    if (deletedHall.HINHANH_ID) {
-        await cloudinary.uploader.destroy(deletedHall.HINHANH_ID);
-    }
-
-    const { deletedCount: deletedPartiesCount } = await Tieccuoi.deleteMany({ MASANH: hallId });
-    const { deletedCount: deletedInvoicesCount } = await Hoadon.deleteMany({ MATIEC: { $in: partyCodes } });
+    // ❌ Không xoá khỏi DB
+    deletedHall.IS_DELETED = true;
+    await deletedHall.save();
 
     return {
-        message: 'Xóa thành công sảnh, tiệc cưới và hoá đơn liên quan',
-        deletedParties: deletedPartiesCount,
-        deletedInvoices: deletedInvoicesCount,
+        message: 'Xóa sảnh thành công',
     };
 };

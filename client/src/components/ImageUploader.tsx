@@ -28,7 +28,7 @@ export default function ImageUploader({
     };
 
     return (
-        <Stack spacing={2}>
+        <Stack sx={{display: 'flex', flexDirection: 'column', gap: '15px'}}>
             <input
                 ref={inputRef}
                 type="file"

@@ -10,12 +10,25 @@ const MonanSchema = new mongoose.Schema({
     required: true
   },
   GHICHU: {
-    type: String
+    type: String,
+    default: ""
   },
   LOAI: {
     type: String,
     required: true
-  }
+  },
+  HINHANH: {
+    type: String,
+    default: ""
+  },
+  HINHANH_ID: {
+    type: String,
+    default: ""
+  },
+  IS_DELETED: {
+    type: Boolean,
+    default: false
+  },
 })
 
 const Monan = mongoose.model('Monan', MonanSchema);

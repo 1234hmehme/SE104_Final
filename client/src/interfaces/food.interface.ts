@@ -1,10 +1,11 @@
 export interface IFood {
-    _id: string;
+    _id: string; // Thêm dòng này
+    id?: string;
     name: string;
     description: string;
     price: number;
-    image: string;
     category: string;
+    image: string;
 };
 
 export interface IFoodBooking {

@@ -19,7 +19,7 @@ const SanhSchema = new mongoose.Schema({
   },
   GHICHU: {
     type: String,
-    required: true
+    default: ""
   },
   HINHANH: {
     type: String,
@@ -28,8 +28,12 @@ const SanhSchema = new mongoose.Schema({
   HINHANH_ID: {
     type: String,
     default: ""
-  }
+  },
+  IS_DELETED: {
+    type: Boolean,
+    default: false
+  },
 })
 
-const Sanh =mongoose.model('Sanh',SanhSchema);
+const Sanh = mongoose.model('Sanh', SanhSchema);
 module.exports = Sanh;

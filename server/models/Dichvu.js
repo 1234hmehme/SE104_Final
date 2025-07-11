@@ -10,11 +10,24 @@ const DichvuSchema = new mongoose.Schema({
     required: true
   },
   GHICHU: {
-    type: String
+    type: String,
+    default: ""
   },
   DANHMUC: {
     type: String,
     required: false
+  },
+  HINHANH: {
+    type: String,
+    default: ""
+  },
+  HINHANH_ID: {
+    type: String,
+    default: ""
+  },
+  IS_DELETED: {
+    type: Boolean,
+    default: false
   },
 })
 

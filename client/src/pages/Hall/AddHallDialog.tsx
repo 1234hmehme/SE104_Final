@@ -70,8 +70,24 @@ const AddHallDialog: React.FC<AddHallDialogProps> = ({ open, onClose, onSuccess,
                         ))}
                     </Select>
                 </FormControl>
-                <TextField label="Số Lượng Bàn Tối Đa" variant="outlined" type="number" fullWidth value={maxTables} onChange={e => setMaxTables(e.target.value)} />
-                <TextField label="Đơn giá" variant="outlined" fullWidth value={price} onChange={e => setPrice(e.target.value)} />
+                <TextField label="Số Lượng Bàn Tối Đa" variant="outlined"
+                    type="number" fullWidth value={maxTables}
+                    onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val >= 0) {
+                            setMaxTables(e.target.value);
+                        }
+                    }}
+                />
+                <TextField label="Đơn giá" variant="outlined"
+                    type="number" fullWidth value={price}
+                    onChange={(e) => {
+                        const val = Number(e.target.value);
+                        if (val >= 0) {
+                            setPrice(e.target.value);
+                        }
+                    }}
+                />
                 <TextField label="Ghi Chú" variant="outlined" multiline rows={3} fullWidth value={note} onChange={e => setNote(e.target.value)} />
                 <ImageUploader
                     onImageSelect={(file) => {

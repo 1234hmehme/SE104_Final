@@ -2,41 +2,31 @@ import { useState, useEffect, useMemo } from "react";
 import ReactECharts from "echarts-for-react";
 import { Box, FormControl, MenuItem, Paper, Select, Typography } from "@mui/material";
 import dayjs from "dayjs";
-import { IMonthlyReport } from "../../interfaces/report.interface";
+import { IMonthlyReportDetail, IMonthlyReport } from "../../interfaces/report.interface";
+import baocaoApi from "../../apis/baocaoApis";
+
+const NullMonthlyReport = {
+  DOANHTHU: 0,
+  ctbcTrongThang: []
+}
 
 export default function RevenueReport() {
   const [selectedMonth, setSelectedMonth] = useState<number>(dayjs().month() + 1);
   const [selectedYear, setSelectedYear] = useState<number>(dayjs().year());
   const currentYear = dayjs().year();
-  const [fetchData, setFetchData] = useState<IMonthlyReport[]>([]);
+  const [fetchData, setFetchData] = useState<IMonthlyReport>(NullMonthlyReport);
 
   useEffect(() => {
     async function loadReport() {
       try {
-        const res = await fetch("http://localhost:3000/api/hoadon");
-        const raw: any[] = await res.json();
+        const data = await baocaoApi.getByThang(selectedMonth, selectedYear);
 
-        const filtered = raw.filter((item) => {
-          const d = dayjs(item.NGAYTHANHTOAN);
-          return d.month() + 1 === selectedMonth && d.year() === selectedYear;
-        });
+        const mapped = {
+          DOANHTHU: data.DOANHTHU,
+          ctbcTrongThang: data.ctbcTrongThang,
+        };
 
-        const groups: Record<number, { eventCount: number; revenue: number }> = {};
-        filtered.forEach((item) => {
-          const day = dayjs(item.NGAYTHANHTOAN).date();
-          if (!groups[day]) groups[day] = { eventCount: 0, revenue: 0 };
-          groups[day].eventCount += 1;
-          groups[day].revenue += item.TONGTIEN;
-        });
-
-        const daysInMonth = dayjs(`${selectedYear}-${selectedMonth}-01`).daysInMonth();
-        const reportArr: IMonthlyReport[] = Array.from({ length: daysInMonth }, (_, i) => {
-          const d = i + 1;
-          const g = groups[d] || { eventCount: 0, revenue: 0 };
-          return { day: d, eventCount: g.eventCount, revenue: g.revenue };
-        });
-
-        setFetchData(reportArr);
+        setFetchData(mapped);
       } catch (err) {
         console.error("Load report lỗi:", err);
       }
@@ -46,23 +36,27 @@ export default function RevenueReport() {
   }, [selectedMonth, selectedYear]);
 
   const totalEvent = useMemo(
-    () => fetchData.reduce((sum, d) => sum + d.eventCount, 0),
+    () => fetchData?.ctbcTrongThang.reduce((sum, d) => sum + d.SoLuongTieccuoi, 0),
     [fetchData]
   );
 
-  const totalRevenue = useMemo(
-    () => fetchData.reduce((sum, d) => sum + d.revenue, 0),
-    [fetchData]
-  );
+  const totalRevenue = fetchData.DOANHTHU;
 
-  const chartData = useMemo(
-    () =>
-      fetchData.map((d) => ({
-        ...d,
-        percent: ((d.revenue / (totalRevenue || 1)) * 100).toFixed(2),
-      })),
-    [fetchData, totalRevenue]
-  );
+  const fullMonth = Array.from({ length: dayjs(`${selectedYear}-${selectedMonth}-01`).daysInMonth() }, (_, i) => i + 1);
+
+  const chartData = useMemo(() => {
+    const dataByDay = new Map(fetchData.ctbcTrongThang.map(d => [dayjs(d.Ngay).date(), d]));
+
+    return fullMonth.map(day => {
+      const d = dataByDay.get(day);
+      return {
+        Ngay: day,
+        SoLuongTieccuoi: d?.SoLuongTieccuoi || 0,
+        DoanhThu: d?.DoanhThu || 0,
+        percent: ((d?.DoanhThu || 0) / (totalRevenue || 1) * 100).toFixed(2),
+      };
+    });
+  }, [fetchData, selectedMonth, selectedYear, totalRevenue]);
 
   const options = {
     tooltip: {
@@ -71,9 +65,9 @@ export default function RevenueReport() {
         const idx = params[0].dataIndex;
         const data = chartData[idx];
         return `
-          Ngày ${data.day}/${selectedMonth}/${selectedYear}<br/>
-          Số tiệc: ${data.eventCount}<br/>
-          Doanh thu: ${data.revenue.toLocaleString()} VND<br/>
+          Ngày ${data.Ngay}/${selectedMonth}/${selectedYear}<br/>
+          Số tiệc: ${data.SoLuongTieccuoi}<br/>
+          Doanh thu: ${data.DoanhThu.toLocaleString()} VND<br/>
           Tỉ lệ: ${data.percent}%
         `;
       },
@@ -86,7 +80,7 @@ export default function RevenueReport() {
     grid: { left: "3%", right: "4%", bottom: "10%", containLabel: true },
     xAxis: {
       type: "category",
-      data: chartData.map((d) => d.day),
+      data: chartData.map((d) => d.Ngay),
     },
     yAxis: [
       { type: "value", name: "Số tiệc", position: "left" },
@@ -102,7 +96,7 @@ export default function RevenueReport() {
       {
         name: "Số tiệc",
         type: "bar",
-        data: chartData.map((d) => d.eventCount),
+        data: chartData.map((d) => d.SoLuongTieccuoi),
         barWidth: "60%",
         itemStyle: { borderRadius: [8, 8, 0, 0] },
       },
@@ -110,7 +104,7 @@ export default function RevenueReport() {
         name: "Doanh thu",
         type: "line",
         yAxisIndex: 1,
-        data: chartData.map((d) => d.revenue),
+        data: chartData.map((d) => d.DoanhThu),
         lineStyle: { color: "#FF9800" },
         itemStyle: { color: "#FF9800" },
       },
@@ -123,6 +117,7 @@ export default function RevenueReport() {
       sx={{
         display: "flex",
         flexDirection: "column",
+        height: '100%',
         p: "30px 5px",
         borderRadius: "15px",
       }}
@@ -175,7 +170,20 @@ export default function RevenueReport() {
       </Box>
 
       {/* Biểu đồ */}
-      <ReactECharts option={options} style={{ height: 500 }} />
+      {chartData.every(d => d.DoanhThu === 0 && d.SoLuongTieccuoi === 0) ? (
+        <Box sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          color: "gray",
+          flex: 1,
+          marginBottom: 10
+        }}>
+          Không có dữ liệu trong tháng này
+        </Box>
+      ) : (
+        <ReactECharts option={options} style={{ height: 500 }} />
+      )}
     </Paper>
   );
 }

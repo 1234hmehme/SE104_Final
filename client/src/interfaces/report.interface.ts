@@ -1,5 +1,10 @@
+export interface IMonthlyReportDetail {
+  Ngay: Date;           // ngày trong tháng
+  SoLuongTieccuoi: number;    // số lượng tiệc
+  DoanhThu: number;       // doanh thu
+}
+
 export interface IMonthlyReport {
-  day: number;           // ngày trong tháng
-  eventCount: number;    // số lượng tiệc
-  revenue: number;       // doanh thu
+  DOANHTHU: number;
+  ctbcTrongThang: IMonthlyReportDetail[]
 }

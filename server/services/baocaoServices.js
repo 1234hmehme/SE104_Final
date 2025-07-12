@@ -3,7 +3,49 @@ const Chitietbaocao = require('../models/Chitietbaocao');
 const Tieccuoi = require('../models/Tieccuoi');
 const Hoadon = require('../models/Hoadon');
 
-async function updateMonthlyReport(date) {
+exports.create = async (THANG, NAM, DOANHTHU) => {
+  return await Baocao.findOneAndUpdate(
+    { THANG, NAM },                  // tìm theo tháng và năm
+    { $set: { DOANHTHU } },          // cập nhật doanh thu
+    { upsert: true, new: true }      // nếu chưa có thì tạo mới
+  );
+};
+
+exports.getAll = async () => {
+  return await Baocao.find();
+};
+
+exports.getByThang = async (THANG, NAM) => {
+  const baocao = await Baocao.findOne({ THANG, NAM });
+
+  const maBaoCao = `BC${String(THANG).padStart(2, '0')}${NAM}`;
+  const ctbcTrongThang = await Chitietbaocao.find({ MaBaoCao: maBaoCao }).sort({ Ngay: 1 });
+
+  return {
+    DOANHTHU: baocao?.DOANHTHU || 0,
+    ctbcTrongThang: ctbcTrongThang || []
+  };
+}
+
+exports.update = async (id, updateData) => {
+  const updated = await Baocao.findByIdAndUpdate(id, updateData, {
+    new: true,
+    runValidators: true
+  });
+  if (!updated) throw new Error('Báo cáo không tồn tại');
+  return updated;
+};
+
+exports.remove = async (id) => {
+  const deleted = await Baocao.findByIdAndDelete(id);
+  if (!deleted) throw new Error('Báo cáo không tồn tại');
+
+  return {
+    message: 'Xóa báo cáo thành công',
+  };
+};
+
+exports.updateMonthlyReport = async (date) => {
   const d = new Date(date);
   const month = d.getMonth() + 1;
   const year = d.getFullYear();
@@ -30,7 +72,7 @@ async function updateMonthlyReport(date) {
   }
 }
 
-async function updateChiTietBaoCao(date) {
+exports.updateChiTietBaoCao = async (date) => {
   const d = new Date(date);
   const thang = d.getMonth() + 1;
   const nam = d.getFullYear();
@@ -78,7 +120,7 @@ async function updateChiTietBaoCao(date) {
   }
 }
 
-async function updateAllChiTietBaoCaoInMonth(date) {
+exports.updateAllChiTietBaoCaoInMonth = async (date) => {
   const d = new Date(date);
   const month = d.getMonth();
   const year = d.getFullYear();
@@ -91,12 +133,6 @@ async function updateAllChiTietBaoCaoInMonth(date) {
     day <= endOfMonth;
     day.setDate(day.getDate() + 1)
   ) {
-    await updateChiTietBaoCao(new Date(day));
+    await baocaoServices.updateChiTietBaoCao(new Date(day));
   }
 }
-
-module.exports = {
-  updateMonthlyReport,
-  updateChiTietBaoCao,
-  updateAllChiTietBaoCaoInMonth,
-};

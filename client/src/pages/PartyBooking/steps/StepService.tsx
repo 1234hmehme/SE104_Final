@@ -39,6 +39,7 @@ const NullService: IService = {
     description: "",
     price: 0,
     image: "",
+    category: ""
 }
 
 export default function StepService() {
@@ -59,6 +60,7 @@ export default function StepService() {
                 description: item.GHICHU,
                 price: item.DONGIA,
                 image: getServiceImage(item.TENDICHVU),
+                category: item.DANHMUC
             }))));
     }, []);
 

@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
-import { Service as ServiceType } from './serviceData';
 import './Service.css';
-// import { IService } from '../../interfaces/service.interface';
-import { Button, Typography, Box } from '@mui/material';
+import { Button, Typography, Box, Snackbar, Alert } from '@mui/material';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -14,30 +12,8 @@ import PetalAnimation from '../../components/Animations/PetalAnimation';
 import SearchBar from '../../components/SearchBar';
 import { RoleBasedRender } from '../../components/RoleBasedRender.tsx';
 import { IService } from '../../interfaces/service.interface.ts';
-function getServiceImage(service: string) {
-    const ten = service ? service.toLowerCase() : '';
-    if (ten.includes('trang trí sảnh tiệc')) return 'https://nhahanghuonglieusunflower.com/wp-content/uploads/2023/06/Trang-tri-sanh-tiec-cuoi-1.jpg';
-    if (ten.includes('trang trí bàn tiệc')) return 'https://cdn.tgdd.vn/2021/12/CookDishThumb/cach-trang-tri-ban-tiec-ngot-doc-dao-moi-la-ap-dung-duoc-cho-thumb-620x620.jpg';
-    if (ten.includes('trang trí lễ đường')) return 'https://tse1.mm.bing.net/th/id/OIP.-puz0hvMSoSpr8ow03r1RwEyDM?rs=1&pid=ImgDetMain';
-    if (ten.includes('mc chuyên nghiệp')) return 'https://webdamcuoi.com/wp-content/uploads/2022/01/mc-dam-cuoi-1024x570.jpg';
-    if (ten.includes('ca sĩ hát live')) return 'https://tse2.mm.bing.net/th/id/OIP.RJBQRtjbja59537YUUsmegHaE7?rs=1&pid=ImgDetMain';
-    if (ten.includes('ban nhạc sống')) return 'https://tse3.mm.bing.net/th/id/OIP.kM2F15lLcH9e4RdqCzMDnwHaE7?rs=1&pid=ImgDetMain';
-    if (ten.includes('quay phim chuyên nghiệp')) return 'https://tse4.mm.bing.net/th/id/OIP.gx2kWyON409-DaK5YOpORAHaEi?rs=1&pid=ImgDetMain';
-    if (ten.includes('chụp ảnh cưới')) return 'https://toplist.vn/images/800px/ah-studio-692689.jpg';
-    if (ten.includes('trang điểm cô dâu')) return 'https://th.bing.com/th/id/R.1b26497fc5b8d280cef2e540e1f58639?rik=NcCaAEts4QRg0Q&pid=ImgRaw&r=0';
-    if (ten.includes('làm tóc cô dâu')) return 'https://erocante.vn/wp-content/uploads/2021/01/kieu-toc-cho-co-dau-mat-dai.jpg';
-    if (ten.includes('áo dài cưới')) return 'https://th.bing.com/th/id/R.e1c951e3746adb79924709cf649c2f39?rik=xKA8HSRnShOAZg&pid=ImgRaw&r=0';
-    if (ten.includes('vest cưới')) return 'https://th.bing.com/th/id/R.d5124a32bd990d59da2ad88db0d581dc?rik=0R8AcCkW8Ypwww&pid=ImgRaw&r=0';
-    if (ten.includes('xe hoa')) return 'https://tse3.mm.bing.net/th/id/OIP.YwPx-ViAOArJbQ6sXgoIBwHaEo?rs=1&pid=ImgDetMain';
-    if (ten.includes('xe đưa đón khách')) return 'https://th.bing.com/th/id/R.e6abef4f975a33a350b55c4b81176466?rik=wPENk0iummvS7A&pid=ImgRaw&r=0';
-    if (ten.includes('thiệp cưới')) return 'https://kalina.com.vn/wp-content/uploads/2022/04/nhung-mau-thiep-cuoi-dep-khong-the-bo-qua-trong-ngay-cuoi-25.jpg';
-    if (ten.includes('hộp quà cưới')) return 'https://tse3.mm.bing.net/th/id/OIP.4-Lx4G02W-_dZbPUFQcxqgHaHa?rs=1&pid=ImgDetMain';
-    if (ten.includes('bánh cưới')) return 'https://product.hstatic.net/200000449489/product/i19__16__a49594884474402cae57254df15b50ee_master.jpg';
-    if (ten.includes('rượu vang')) return 'https://vuanhabep.com.vn/wp-content/uploads/2022/07/ly-ruou-cuoi-1.jpg';
-    if (ten.includes('bảo vệ')) return 'https://th.bing.com/th/id/OIP.SE6YLJpAN5o_asn62rKwxwHaE8?w=290&h=193&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3';
-    if (ten.includes('y tế')) return 'https://th.bing.com/th/id/OIP.1XRMBkS2H0HoS5lK_o0Q2gHaEK?w=295&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3';
-    return '/images/service-default.jpg';
-}
+import dichvuApi from '../../apis/dichvuApis.ts';
+
 export default function Service() {
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -46,109 +22,73 @@ export default function Service() {
         };
     }, []);
     const [selectedCategory, setSelectedCategory] = useState<string>('Tất cả');
-    const [openAddServiceDialog, setOpenAddServiceDialog] = useState<boolean>(false);
-    const [openEditServiceDialog, setOpenEditServiceDialog] = useState<boolean>(false);
-    const [serviceToEdit, setServiceToEdit] = useState<ServiceType | null>(null);
-    const [openDeleteDialog, setOpenDeleteDialog] = useState<boolean>(false);
-    const [selectedService, setSelectedService] = useState<IService | null>(null);
-    const [detailDialogOpen, setDetailDialogOpen] = useState(false);
-    const [serviceToDelete, setServiceToDelete] = useState<ServiceType | null>(null);
-    const [searchKey, setSearchKey] = useState("");
     const categories = ['Tất cả', 'Trang Trí', 'MC & Ca Sĩ', 'Quay Chụp', 'Làm Đẹp', 'Trang Phục', 'Phương Tiện', 'Thiệp & Quà', 'Bánh & Rượu', 'An Ninh'];
-    const [services, setServices] = useState<ServiceType[]>([]);
-    const handleServiceClick = (service: IService) => {
-        setSelectedService(service);
-        setDetailDialogOpen(true);
-    };
+    const [openAddServiceDialog, setOpenAddServiceDialog] = useState(false);
+    const [openEditServiceDialog, setOpenEditServiceDialog] = useState(false);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [detailDialogOpen, setDetailDialogOpen] = useState(false);
+    const [serviceToEdit, setServiceToEdit] = useState<IService | null>(null);
+    const [serviceToDelete, setServiceToDelete] = useState<string | null>(null);
+    const [selectedService, setSelectedService] = useState<IService | null>(null);
+    const [services, setServices] = useState<IService[]>([]);
+    const [searchKey, setSearchKey] = useState("");
 
-    const handleCloseDetailDialog = () => {
-        setDetailDialogOpen(false);
-        setSelectedService(null);
+    const [successMessage, setSuccessMessage] = useState('');
+    const [openSnackbar, setOpenSnackbar] = useState(false);
+
+    const fetchServices = async () => {
+        try {
+            const data = await dichvuApi.getAll();
+
+            const mapped = data.map((item: any) => ({
+                _id: item._id,
+                name: item.TENDICHVU,
+                description: item.GHICHU,
+                price: item.DONGIA,
+                category: item.DANHMUC,
+                image: item.HINHANH,
+            }));
+
+            setServices(mapped);
+        } catch (err) {
+            console.error("Lỗi khi fetch dịch vụ:", err);
+        }
     };
 
     useEffect(() => {
-        fetch('http://localhost:3000/api/dichvu')
-            .then(res => res.json())
-            .then(data => {
-                // Map lại dữ liệu từ backend sang đúng format FE cần
-                const mapped = data.map((item: any) => ({
-                    _id: item._id,
-                    name: item.TENDICHVU,
-                    description: item.GHICHU,
-                    price: item.DONGIA,
-                    category: item.DANHMUC,
-                    image: getServiceImage(item.TENDICHVU),
-                }));
-                setServices(mapped);
-            });
+        fetchServices();
     }, []);
+
+    useEffect(() => {
+        if (openSnackbar) {
+            const timer = setTimeout(() => setOpenSnackbar(false), 2000);
+            return () => clearTimeout(timer);
+        }
+    }, [openSnackbar]);
+
     const filteredServices = services.filter(service => {
         const matchesCategory = selectedCategory === 'Tất cả' || service.category === selectedCategory;
         const matchesSearch = service.name.toLowerCase().includes(searchKey.toLowerCase());
         return matchesCategory && matchesSearch;
     });
 
-    const handleOpenAddServiceDialog = () => {
-        setOpenAddServiceDialog(true);
+    const handleSuccess = async (message: string) => {
+        await fetchServices();
+        setSuccessMessage(message);
+        setOpenSnackbar(true);
     };
-    const handleAddService = (data: any) => {
-        fetch('http://localhost:3000/api/dichvu', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                TENDICHVU: data.name,
-                GHICHU: data.description,
-                DONGIA: data.price,
-                DANHMUC: data.category,
-            }),
-        })
-            .then(res => res.json())
-            .then(newService => {
-                setServices(prev => [
-                    ...prev,
-                    {
-                        _id: newService._id,
-                        name: newService.TENDICHVU,
-                        description: newService.GHICHU,
-                        price: newService.DONGIA,
-                        category: newService.DANHMUC,
-                    }
-                ]);
-                setOpenAddServiceDialog(false);
-            })
+
+    const handleFail = async (message: string) => {
+        setSuccessMessage(message);
+        setOpenSnackbar(true);
+    }
+
+    const handleDeleteClick = (_id: string) => {
+        setServiceToDelete(_id);
+        setOpenDeleteDialog(true);
     };
-    const handleCloseAddServiceDialog = () => {
-        setOpenAddServiceDialog(false);
-    };
-    const handleEditService = (updatedService: ServiceType) => {
-        fetch(`http://localhost:3000/api/dichvu/${updatedService._id}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                TENDICHVU: updatedService.name,
-                GHICHU: updatedService.description,
-                DONGIA: updatedService.price,
-                DANHMUC: updatedService.category,
-            }),
-        })
-            .then(res => res.json())
-            .then(newService => setServices(prev =>
-                prev.map(s => s._id === updatedService._id
-                    ? {
-                        _id: updatedService._id,
-                        name: newService.TENDICHVU,
-                        description: newService.GHICHU,
-                        price: newService.DONGIA,
-                        category: newService.DANHMUC,
-                        image: getServiceImage(newService.TENDICHVU)
-                    }
-                    : s
-                )
-            ));
-        setOpenEditServiceDialog(false);
-        setServiceToEdit(null);
-    };
-    const handleEditClick = (service: ServiceType) => {
+
+    const handleEditClick = (service: IService) => {
         setServiceToEdit(service);
         setOpenEditServiceDialog(true);
     };
@@ -158,26 +98,9 @@ export default function Service() {
         setServiceToEdit(null);
     };
 
-    const handleDeleteClick = (service: ServiceType) => {
-        setServiceToDelete(service);
-        setOpenDeleteDialog(true);
-    };
-
-    const handleCloseDeleteDialog = () => {
-        setOpenDeleteDialog(false);
-        setServiceToDelete(null);
-    };
-
-    const handleConfirmDelete = () => {
-        if (!serviceToDelete) return;
-        fetch(`http://localhost:3000/api/dichvu/${serviceToDelete._id}`, {
-            method: 'DELETE',
-        })
-            .then(res => {
-                if (res.ok) setServices(prev => prev.filter(s => s._id !== serviceToDelete._id));
-                setOpenDeleteDialog(false);
-                setServiceToDelete(null);
-            });
+    const handleServiceClick = (service: IService) => {
+        setSelectedService(service);
+        setDetailDialogOpen(true);
     };
 
     return (
@@ -236,7 +159,7 @@ export default function Service() {
                                         },
                                         textTransform: "none",
                                     }}
-                                    onClick={handleOpenAddServiceDialog}
+                                    onClick={() => setOpenAddServiceDialog(true)}
                                 >
                                     Thêm dịch vụ
                                 </Button>
@@ -261,7 +184,7 @@ export default function Service() {
                             gap: 24,
                             justifyContent: 'flex-start',
                         }}>
-                            {filteredServices.map((service: ServiceType) => (
+                            {filteredServices.map((service: IService) => (
                                 <div key={service._id} className="service-card" style={{
                                     flex: '0 1 calc(25% - 18px)',
                                     minWidth: '240px',
@@ -309,7 +232,7 @@ export default function Service() {
                                             <Button size="small" sx={{ minWidth: 0, p: 0.5 }}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
-                                                    handleDeleteClick(service);
+                                                    handleDeleteClick(service._id);
                                                 }}>
                                                 <Box
                                                     sx={{
@@ -345,29 +268,53 @@ export default function Service() {
 
                         <ServiceAddDialog
                             open={openAddServiceDialog}
-                            onClose={handleCloseAddServiceDialog}
-                            onSave={handleAddService} // <-- truyền hàm này vào đây
+                            onClose={() => setOpenAddServiceDialog(false)}
+                            onSuccess={handleSuccess}
+                            onFail={handleFail}
                             categories={categories}
                         />
+                        
                         <ServiceEditDialog
                             open={openEditServiceDialog}
                             onClose={handleCloseEditDialog}
                             service={serviceToEdit}
                             categories={categories}
-                            onSave={handleEditService}
+                            onSuccess={handleSuccess}
+                            onFail={handleFail}
                         />
+
                         <ConfirmDelete
                             open={openDeleteDialog}
-                            onClose={handleCloseDeleteDialog}
-                            onConfirm={handleConfirmDelete}
+                            onClose={() => setOpenDeleteDialog(false)}
+                            onConfirm={async () => {
+                                if (!serviceToDelete) return;
+
+                                try {
+                                    await dichvuApi.delete(serviceToDelete);
+                                    handleSuccess("Xóa dịch vụ thành công");
+                                } catch (err) {
+                                    console.error("Lỗi khi xóa:", err);
+                                    handleFail("Xóa dịch vụ thất bại");
+                                } finally {
+                                    setOpenDeleteDialog(false);
+                                    setServiceToDelete(null);
+                                }
+                            }}
                         />
+
                         {selectedService && (
                             <ServiceDetailMenu
                                 open={detailDialogOpen}
-                                onClose={handleCloseDetailDialog}
+                                onClose={() => setDetailDialogOpen(false)}
                                 initialData={selectedService}
                             />
                         )}
+
+                        <Snackbar open={openSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center', }}>
+                            <Alert severity="success" sx={{ width: '100%', borderRadius: '10px' }}>
+                                {successMessage}
+                            </Alert>
+                        </Snackbar>
                     </div>
                 </Box>
             </Box>

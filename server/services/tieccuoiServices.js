@@ -28,10 +28,9 @@ exports.create = async (data) => {
 
   await new Hoadon({
     MATIEC: newMaTiec,
-    NGAYTHANHTOAN: data.NGAYDAI,
     SOTIENHOADON: data.TIENCOC,
     TIENPHAT: 0,
-    TIENBAN: tienBan,
+    TIENBAN: tienBan * (data.SOLUONGBAN + data.SOBANDT),
     TIENDICHVU: tienDichVu,
     LOAIHOADON: 'Đặt cọc'
   }).save();
@@ -80,7 +79,7 @@ exports.pay = async (id) => {
 
   const daysLate = Math.max(0, Math.ceil((new Date() - new Date(tiec.NGAYDAI)) / (1000 * 60 * 60 * 24)));
   const penalty = daysLate > 0 ? (daysLate - 1) * 0.01 * tiec.TIENCOC * 10 : 0;
-  const total = tiec.TIENCOC * 10 + penalty;
+  const total = tiec.TIENCOC * 9 + penalty;
 
   tiec.TRANGTHAI = 'Đã thanh toán';
 
@@ -90,7 +89,6 @@ exports.pay = async (id) => {
 
   const newHoadon = new Hoadon({
     MATIEC: tiec.MATIEC,
-    NGAYTHANHTOAN: tiec.NGAYDAI,
     SOTIENHOADON: total,
     TIENPHAT: penalty,
     TIENBAN: hoaDonDatCoc.TIENBAN,

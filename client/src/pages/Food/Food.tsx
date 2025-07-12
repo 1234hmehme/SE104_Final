@@ -24,12 +24,12 @@ export default function Food() {
     const [selectedCategory, setSelectedCategory] = useState<string>('Tất cả');
     const categories = ['Tất cả', 'Món Khai Vị', 'Món Chính', 'Món Tráng Miệng'];
     const [addDialogOpen, setAddDialogOpen] = useState(false);
-    const [selectedFood, setSelectedFood] = useState<IFood | null>(null);
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    const [foodToDelete, setFoodToDelete] = useState<string | null>(null);
     const [editDialogOpen, setEditDialogOpen] = useState(false);
+    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
     const [detailDialogOpen, setDetailDialogOpen] = useState(false);
     const [foodToEdit, setFoodToEdit] = useState<IFood | null>(null);
+    const [foodToDelete, setFoodToDelete] = useState<string | null>(null);
+    const [selectedFood, setSelectedFood] = useState<IFood | null>(null);
     const [foods, setFoods] = useState<IFood[]>([]);
     const [searchKey, setSearchKey] = useState("");
 
@@ -277,6 +277,16 @@ export default function Food() {
                             onFail={handleFail}
                             categories={categories}
                         />
+
+                        <FoodEditDialog
+                            open={editDialogOpen}
+                            onClose={handleCloseEditDialog}
+                            food={foodToEdit}
+                            categories={categories}
+                            onSuccess={handleSuccess}
+                            onFail={handleFail}
+                        />
+
                         <ConfirmDelete
                             open={deleteDialogOpen}
                             onClose={() => setDeleteDialogOpen(false)}
@@ -294,15 +304,6 @@ export default function Food() {
                                     setFoodToDelete(null);
                                 }
                             }}
-                        />
-
-                        <FoodEditDialog
-                            open={editDialogOpen}
-                            onClose={handleCloseEditDialog}
-                            food={foodToEdit}
-                            categories={categories}
-                            onSuccess={handleSuccess}
-                            onFail={handleFail}
                         />
 
                         {selectedFood && (

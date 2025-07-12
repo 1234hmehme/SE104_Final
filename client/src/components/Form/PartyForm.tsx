@@ -261,7 +261,7 @@ export default function PartyForm({
                     {form.status == 'Đã đặt cọc' &&
                         <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                             <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
-                                Tổng tiền còn lại: {(form.deposit * 10).toLocaleString()} VND
+                                Tổng tiền còn lại: {(form.deposit * 9).toLocaleString()} VND
                             </Typography>
                             <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
                                 Ngày đến hạn thanh toán: {formatDate(form.date)}
@@ -275,7 +275,7 @@ export default function PartyForm({
                                         Tiền phạt: {penalty.toLocaleString()} VND ({daysLate}%)
                                     </Typography>
                                     <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
-                                        Tổng cần thanh toán: {(form.deposit * 10 + penalty).toLocaleString()} VND
+                                        Tổng cần thanh toán: {(form.deposit * 9 + penalty).toLocaleString()} VND
                                     </Typography>
                                 </Box>
                             }

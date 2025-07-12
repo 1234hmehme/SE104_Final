@@ -4,6 +4,7 @@ export interface IService {
     description: string;
     price: number;
     image: string;
+    category: string;
 };
 
 export interface IServiceBooking {

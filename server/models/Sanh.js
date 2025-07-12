@@ -3,7 +3,7 @@ const mongoose = require('mongoose')
 const SanhSchema = new mongoose.Schema({
   TENSANH: {
     type: String,
-    require: true,
+    required: true,
   },
   LOAISANH: {
     type: String,

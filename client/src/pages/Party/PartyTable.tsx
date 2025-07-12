@@ -365,7 +365,7 @@ export default function PartyTable({
                                         width: "10%",
                                     }}
                                 >
-                                    {party.deposit}
+                                    {party.deposit.toLocaleString()}
                                 </TableCell>
 
                                 {/* Tables */}

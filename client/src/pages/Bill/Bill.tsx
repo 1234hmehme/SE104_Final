@@ -29,7 +29,7 @@ export default function BillPage() {
     const [toDate, setToDate] = useState(dayjs().add(5, 'year').toISOString());
 
     const [isBillFormOpen, setIsBillFormOpen] = useState(false);
-    const [billPartyData, setBillPartyData] = useState<IBill | null>(null);
+    const [selectedBillId, setSelectedBillId] = useState("");
 
     const fetchBills = async () => {
         try {
@@ -78,8 +78,8 @@ export default function BillPage() {
         return matchesDate && matchesSearch && matchesType;
     });
 
-    const handleRead = (bill: IBill) => {
-        setBillPartyData(bill);
+    const handleRead = (billId: string) => {
+        setSelectedBillId(billId);
         setIsBillFormOpen(true);
     };
 
@@ -360,8 +360,7 @@ export default function BillPage() {
             <BillForm
                 open={isBillFormOpen}
                 onClose={() => setIsBillFormOpen(false)}
-                initialData={billPartyData}
-                readOnly={true}
+                billId={selectedBillId}
             />
         </Box>
     );

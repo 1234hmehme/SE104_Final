@@ -2,61 +2,87 @@ import {
     Dialog,
     DialogTitle,
     DialogContent,
-    TextField,
-    DialogActions,
-    Button,
     Box,
-    Select,
-    MenuItem,
     Typography,
-    FormControl,
+    TableContainer,
+    Paper,
+    Table,
+    TableHead,
+    TableRow,
+    TableCell,
+    TableBody,
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { defaultBgColorMap, defaultTextColorMap } from "../../assets/color/ColorMap";
-import { DatePicker, } from '@mui/x-date-pickers';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import dayjs from 'dayjs';
+import { formatDate } from "../../utils/formatDate";
+import hoadonApi from "../../apis/hoadonApis";
+import { IBillDetail } from "../../interfaces/bill.interface";
 
 export default function BillForm({
     open,
     onClose,
-    initialData,
-    readOnly,
+    billId,
 }: {
     open: boolean;
     onClose: () => void;
-    initialData?: any;
-    readOnly: boolean
+    billId: string;
 }) {
-    const [form, setForm] = useState({
-        id: 0,
-        groom: "",
-        bride: "",
-        phone: "",
-        date: "",
-        shift: "",
-        hall: "",
-        deposit: 0,
-        tables: 0,
-        reserveTables: 0,
+    const [form, setForm] = useState<IBillDetail>({
+        id: '',
+        NGAYTHANHTOAN: '',
+        SOTIENHOADON: 0,
+        TIENPHAT: 0,
+        TIENBAN: 0,
+        TIENDICHVU: 0,
+        LOAIHOADON: "Đặt cọc",
+        NGAYDAI: '',
+
+        CHURE: '',
+        CODAU: '',
+        SOLUONGBAN: 0,
+        SOBANDT: 0,
+
+        monAn: [],
+
+        dichVu: [],
     });
 
+    const fetchBillDetail = async () => {
+        try {
+            const data = await hoadonApi.getDetailById(billId);
+
+            const mapped = {
+                id: data.hoadon._id,
+                NGAYTHANHTOAN: data.hoadon.NGAYTHANHTOAN,
+                SOTIENHOADON: data.hoadon.SOTIENHOADON,
+                TIENPHAT: data.hoadon.TIENPHAT,
+                TIENBAN: data.hoadon.TIENBAN,
+                TIENDICHVU: data.hoadon.TIENDICHVU,
+                LOAIHOADON: data.hoadon.LOAIHOADON,
+
+                CHURE: data.tiec.TENCR,
+                CODAU: data.tiec.TENCD,
+                SOLUONGBAN: data.tiec.SOLUONGBAN,
+                SOBANDT: data.tiec.SOBANDT,
+                NGAYDAI: data.tiec.NGAYDAI,
+
+                monAn: data.monAn,
+
+                dichVu: data.dichVu,
+            };
+
+            setForm(mapped);
+        } catch (err) {
+            console.error("Lỗi khi fetch bill:", err);
+        }
+    }
     useEffect(() => {
-        if (initialData) setForm(initialData);
-        else setForm({
-            id: 0,
-            groom: "",
-            bride: "",
-            phone: "",
-            date: "",
-            shift: "",
-            hall: "",
-            deposit: 0,
-            tables: 0,
-            reserveTables: 0,
-        });
-    }, [initialData]);
+        fetchBillDetail()
+    }, [billId]);
+
+    const totalTables = (form.SOLUONGBAN || 0) + (form.SOBANDT || 0);
+    const daysLate = (form.TIENPHAT || 0) / (form.TIENBAN + form.TIENDICHVU) / 0.01;
+    const tongTienTiecCuoi = (form.TIENBAN || 0) + (form.TIENDICHVU || 0);
 
     return (
         <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth
@@ -64,7 +90,7 @@ export default function BillForm({
                 '& .MuiPaper-root': {
                     padding: '26px 4px',
                     borderRadius: '15px',
-                    maxWidth: '700px',
+                    maxWidth: '850px',
                 },
                 '& .MuiDialogContent-root': {
                     padding: 0,
@@ -92,325 +118,195 @@ export default function BillForm({
             </DialogTitle>
 
             <DialogContent>
-                <Box sx={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    justifyContent: 'center',
-                    gap: '20px',
-                    padding: '15px 24px'
-                }}>
-                    <Box sx={{
+                <Box
+                    sx={{
                         display: 'flex',
                         flexDirection: 'column',
+                        alignItems: 'center',
+                        gap: '10px',
+                        padding: '20px 10px',
+                        "& fieldset": {
+                            borderRadius: "10px",
+                        },
+                        "& .MuiPaper-root": {
+                            padding: "10px 4px",
+                            borderRadius: '10px',
+                        },
+                    }}
+                >
+                    <Box sx={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        width: '90%',
                     }}>
-                        <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
-                            Tên chú rể
-                        </Typography>
-                        <TextField fullWidth value={form.groom} />
+                        <Box sx={{ display: 'flex', gap: '10px', width: '30%' }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>Tên chú rể:</Typography>
+                            <Typography sx={{ fontSize: '16px' }}>{form.CHURE}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: '10px', width: '30%' }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>Tên cô dâu:</Typography>
+                            <Typography sx={{ fontSize: '16px' }}>{form.CODAU}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: '10px', width: '30%' }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>Ngày đãi tiệc:</Typography>
+                            <Typography sx={{ fontSize: '16px' }}>{formatDate(form.NGAYDAI)}</Typography>
+                        </Box>
                     </Box>
 
                     <Box sx={{
                         display: 'flex',
-                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        width: '90%',
+                        alignItems: 'center',
                     }}>
-                        <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
-                            Tên cô dâu
-                        </Typography>
-                        <TextField fullWidth value={form.bride} />
-                    </Box>
+                        <Box sx={{ display: 'flex', gap: '10px', width: '30%' }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>Tổng tiền đặt tiệc:</Typography>
+                            <Typography sx={{ fontSize: '16px' }}>{tongTienTiecCuoi.toLocaleString()}</Typography>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: '10px', width: '30%', alignItems: 'center', }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>
+                                Loại hóa đơn:
+                            </Typography>
 
-                    <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                    }}>
-                        <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
-                            Số điện thoại
-                        </Typography>
-                        <TextField fullWidth value={form.phone} />
-                    </Box>
-
-                    <Box sx={{
-                        display: 'flex',
-                        flexDirection: ({ xs: 'column', sm: 'row', }),
-                        gap: '18px',
-                    }}>
-                        <LocalizationProvider dateAdapter={AdapterDayjs}>
-                            <FormControl fullWidth sx={{
-                                flexDirection: 'column',
+                            <Box sx={{
+                                width: 'fit-content',
+                                padding: '5px 15px',
+                                fontSize: "14px",
+                                fontWeight: "bold",
+                                borderRadius: '8px',
+                                backgroundColor: defaultBgColorMap[form.LOAIHOADON],
+                                color: defaultTextColorMap[form.LOAIHOADON],
+                                textTransform: "none",
                             }}>
-                                <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
-                                    Ngày tổ chức
-                                </Typography>
-                                <DatePicker
-                                    value={dayjs(form.date)}
-                                    format="DD/MM/YYYY"
-                                    onChange={(value) => setForm({
-                                        ...form,
-                                        date: (value?.toDate() || new Date()).toString()
-                                    })}
-                                    sx={{
-                                        "& .MuiPickersInputBase-root": {
-                                            backgroundColor: '#fff',
-                                            borderRadius: "10px",
-                                            gap: '5px',
-                                            '& .MuiPickersOutlinedInput-root.Mui-error .MuiPickersOutlinedInput-notchedOutline': {
-                                                borderColor: 'rgba(0, 0, 0, 0.23)'
-                                            }
-                                        },
-                                        "& .MuiPickersSectionList-root": {
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            height: '61px',
-                                            paddingY: '0px',
-                                        },
-                                    }}
-                                    slotProps={{
-                                        popper: {
-                                            sx: {
-                                                '& .MuiPaper-root': {
-                                                    borderRadius: '20px',
-                                                },
-                                                '& .MuiDateCalendar-root': {
-                                                    padding: '18px 20px',
-                                                    gap: '10px',
-                                                    maxHeight: '360px',
-                                                    height: 'auto',
-                                                    width: '310px'
-                                                },
-                                                '& .MuiPickersCalendarHeader-root': {
-                                                    padding: '0 8px',
-                                                    margin: 0,
-                                                    justifyContent: 'space-between',
-                                                },
-                                                '& .MuiPickersCalendarHeader-labelContainer': {
-                                                    color: '#202224',
-                                                    fontWeight: 600,
-                                                    fontSize: '15px',
-                                                    margin: 0,
-                                                },
-                                                '& .MuiPickersArrowSwitcher-root': {
-                                                    gap: '5px'
-                                                },
-                                                '& .MuiPickersArrowSwitcher-button': {
-                                                    padding: 0,
-                                                    backgroundColor: '#e7e9ee',
-                                                    borderRadius: '5px'
-                                                },
-                                                '& .MuiTypography-root': {
-                                                    color: '#454545',
-                                                },
-                                                '& .MuiDayCalendar-slideTransition': {
-                                                    minHeight: 0,
-                                                    marginBottom: '4px'
-                                                },
-                                            },
+                                {form.LOAIHOADON}
+                            </Box>
+                        </Box>
+                        <Box sx={{ display: 'flex', gap: '10px', width: '30%' }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold' }}>Ngày thanh toán:</Typography>
+                            <Typography sx={{ fontSize: '16px' }}>{formatDate(form.NGAYTHANHTOAN)}</Typography>
+                        </Box>
+                    </Box>
 
-                                        },
-                                        day: {
-                                            sx: {
-                                                color: "#8f9091",
-                                                borderRadius: '10px',
-                                                '&:hover': {
-                                                    backgroundColor: '#e3f2fd',
-                                                },
-                                                '&.MuiPickersDay-root.Mui-selected': {
-                                                    backgroundColor: '#4880FF',
-                                                    color: '#fff',
-                                                    '&:hover': {
-                                                        backgroundColor: '#4880FF'
-                                                    }
-                                                },
-                                            },
-                                        },
-                                    }}
-                                />
-                            </FormControl>
-                        </LocalizationProvider>
-
-                        <FormControl fullWidth sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                        }}>
-                            <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
-                                Ca
+                    {form.LOAIHOADON == 'Thanh toán' ?
+                        <Box sx={{ display: 'flex', flexDirection: 'column', width: '90%', }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold', color: 'red' }}>
+                                Còn lại: {(tongTienTiecCuoi / 10 * 9).toLocaleString()} VND
                             </Typography>
-                            <Select
-                                value={form.shift}
-                                onChange={(e) => setForm({ ...form, shift: e.target.value })}
-                                displayEmpty
-                                sx={{
-                                    height: '61px',
-                                    "& .MuiSelect-icon": {
-                                        color: "var(--text-color)",
-                                    },
-                                }}
-                                MenuProps={{
-                                    PaperProps: {
-                                        sx: {
-                                            boxSizing: 'border-box',
-                                            padding: "0 8px",
-                                            border: "1px solid #e4e4e7",
-                                            "& .MuiMenuItem-root": {
-                                                borderRadius: "6px",
-                                                "&:hover": {
-                                                    backgroundColor: "rgba(117, 126, 136, 0.08)",
-                                                },
-                                                "&.Mui-selected": {
-                                                    backgroundColor: "#bcd7ff",
-                                                },
-                                            },
-                                        },
-                                    },
-                                }}
-                            >
-                                <MenuItem value="" disabled>
-                                    Chọn ca     {/* placeholder */}
-                                </MenuItem>
-                                {["Trưa", "Tối"].map((item) =>
-                                    <MenuItem value={item}
-                                        sx={{
-                                        }}
-                                    >
-                                        <Box sx={{
-                                            display: 'inline-flex',
-                                            paddingX: 1.5,
-                                            paddingY: 0.5,
-                                            borderRadius: 2,
-                                            backgroundColor: defaultBgColorMap[item],
-                                            color: defaultTextColorMap[item],
-                                            fontWeight: 'bold',
-                                            zIndex: 100
-                                        }}>
-                                            {item}
-                                        </Box>
-                                    </MenuItem>
+                            {form.TIENPHAT > 0 &&
+                                <Box>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: 'bold', color: 'red' }}>
+                                        Thanh toán trễ: {daysLate} ngày
+                                    </Typography>
+                                    <Typography sx={{ fontSize: '16px', fontWeight: 'bold', color: 'red' }}>
+                                        Tiền phạt: {form.TIENPHAT.toLocaleString()} VND ({daysLate}%)
+                                    </Typography>
+                                </Box>
+                            }
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold', color: 'red' }}>
+                                Tổng thanh toán: {(form.SOTIENHOADON).toLocaleString()} VND
+                            </Typography>
+                        </Box>
+                        :
+                        <Box sx={{ display: 'flex', flexDirection: 'column', width: '90%', }}>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold', color: 'red' }}>
+                                Tiền đặt cọc: {(tongTienTiecCuoi / 10).toLocaleString()} VND
+                            </Typography>
+                            <Typography sx={{ fontSize: '16px', fontWeight: 'bold', color: 'red' }}>
+                                Còn lại: {(tongTienTiecCuoi / 10 * 9).toLocaleString()} VND
+                            </Typography>
+                        </Box>
+                    }
+
+                    <Typography sx={{ fontSize: '16px', fontWeight: 'bold', width: '80%' }}>
+                        Món ăn:
+                    </Typography>
+
+                    <TableContainer component={Paper} sx={{
+                        width: '90%',
+                        borderRadius: 3,
+                        boxShadow: 3,
+                    }}>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>STT</TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>Tên món ăn</TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>Danh mục</TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>Đơn giá</TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>Ghi Chú</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {form.monAn.map((item, index) =>
+                                    <TableRow key={item._id}>
+                                        <TableCell align="center">{index + 1}</TableCell>
+                                        <TableCell>{item.TENMONAN}</TableCell>
+                                        <TableCell align="center">{item.LOAI}</TableCell>
+                                        <TableCell align="center">{item.GIATIEN.toLocaleString('vi-VN')}</TableCell>
+                                        <TableCell>{item.GHICHU}</TableCell>
+                                    </TableRow>
                                 )}
-                            </Select>
-                        </FormControl>
+                                <TableRow>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>
+                                        Số lượng bàn: {totalTables}
+                                    </TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>
+                                        Đơn giá bàn: {(form.TIENBAN / (totalTables)).toLocaleString('vi-VN')}
+                                    </TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>
+                                        Tổng tiền bàn: {form.TIENBAN.toLocaleString('vi-VN')}
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
 
-                        <FormControl fullWidth sx={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                        }}>
-                            <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
-                                Sảnh
-                            </Typography>
-                            <Select
-                                value={form.hall}
-                                onChange={(e) => setForm({ ...form, hall: e.target.value })}
-                                displayEmpty
-                                sx={{
-                                    height: '61px',
-                                    "& .MuiSelect-icon": {
-                                        color: "var(--text-color)",
-                                    },
-                                }}
-                                MenuProps={{
-                                    PaperProps: {
-                                        sx: {
-                                            boxSizing: 'border-box',
-                                            padding: "0 8px",
-                                            border: "1px solid #e4e4e7",
-                                            "& .MuiMenuItem-root": {
-                                                borderRadius: "6px",
-                                                "&:hover": {
-                                                    backgroundColor: "rgba(117, 126, 136, 0.08)",
-                                                },
-                                                "&.Mui-selected": {
-                                                    backgroundColor: "#bcd7ff",
-                                                },
-                                            },
-                                        },
-                                    },
-                                }}
-                            >
-                                <MenuItem value="" disabled>
-                                    Chọn sảnh     {/* placeholder */}
-                                </MenuItem>
-                                {["A", "B", "C", "D", "E"].map((item) => (
-                                    <MenuItem value={item}
-                                        sx={{
-                                        }}
-                                    >
-                                        <Box sx={{
-                                            display: 'inline-flex',
-                                            paddingX: 1.5,
-                                            paddingY: 0.5,
-                                            borderRadius: 2,
-                                            backgroundColor: defaultBgColorMap[item],
-                                            color: defaultTextColorMap[item],
-                                            fontWeight: 'bold',
-                                        }}>
-                                            {item}
-                                        </Box>
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
-                    </Box>
+                    <Typography sx={{ fontSize: '16px', fontWeight: 'bold', width: '80%' }}>
+                        Dịch vụ:
+                    </Typography>
 
-                    <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
+                    <TableContainer component={Paper} sx={{
+                        width: '90%',
+                        borderRadius: 3,
+                        boxShadow: 3,
                     }}>
-                        <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
-                            Tiền cọc
-                        </Typography>
-                        <TextField fullWidth value={form.deposit} />
-                    </Box>
+                        <Table>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>STT</TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>Tên dịch vụ</TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>Số lượng</TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>Đơn giá</TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>Thành tiền</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {form.dichVu.map((item, index) =>
+                                    <TableRow key={item._id}>
+                                        <TableCell align="center">{index + 1}</TableCell>
+                                        <TableCell>{item.TENDICHVU}</TableCell>
+                                        <TableCell align="center">{item.SOLUONG}</TableCell>
+                                        <TableCell align="center">{item.GIATIEN.toLocaleString('vi-VN')}</TableCell>
+                                        <TableCell align="center">{(item.SOLUONG * item.GIATIEN).toLocaleString('vi-VN')}</TableCell>
+                                    </TableRow>
+                                )}
+                                <TableRow>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell></TableCell>
+                                    <TableCell align="center" style={{ fontWeight: 'bold' }}>
+                                        Tổng tiền dịch vụ: {form.TIENDICHVU.toLocaleString('vi-VN')}
+                                    </TableCell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
 
-                    <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                    }}>
-                        <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
-                            Số lượng bàn
-                        </Typography>
-                        <TextField fullWidth value={form.tables} />
-                    </Box>
-
-                    <Box sx={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                    }}>
-                        <Typography sx={{ fontSize: '14px', fontWeight: 'bold' }}>
-                            Số bàn dự trữ
-                        </Typography>
-                        <TextField fullWidth value={form.reserveTables} />
-                    </Box>
                 </Box>
             </DialogContent>
-
-            {!readOnly &&
-                <DialogActions sx={{
-                    alignSelf: 'center',
-                    paddingTop: '16px',
-                    paddingBottom: '0px',
-                    gap: '10px',
-                }}>
-                    <Button onClick={onClose}
-                        sx={{
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                            color: 'var(--text-color)',
-                            textTransform: "none",
-                        }}
-                    >
-                        Huỷ
-                    </Button>
-                    <Button variant="contained"
-                        sx={{
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                            borderRadius: '8px',
-                            backgroundColor: "#4880FF",
-                            textTransform: "none",
-                        }}
-                    >
-                        Lưu
-                    </Button>
-                </DialogActions>
-            }
-        </Dialog>
+        </Dialog >
     );
 }

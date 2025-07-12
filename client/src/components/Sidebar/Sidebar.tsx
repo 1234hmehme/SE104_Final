@@ -10,8 +10,8 @@ import {
   Utensils,
   Gift,
   ChartArea,
-  Settings,
   LogOut,
+  UserCheck,
 } from 'lucide-react';
 import IconButton from '@mui/material/IconButton';
 import { Box } from '@mui/material';
@@ -25,6 +25,7 @@ export default function Sidebar() {
   const { role, logout } = useAuth();
 
   const rawMenuItems = [
+    { path: 'cap-quyen', icon: <UserCheck size={26} />, label: 'Cấp quyền', roles: ['Admin'] },
     { path: 'sanh-tiec', icon: <Landmark size={26} />, label: 'Sảnh tiệc' },
     { path: 'tiec-cuoi', icon: <Wine size={26} />, label: 'Tiệc cưới' },
     { path: 'lich-su-kien/tuan', icon: <Calendar size={26} />, label: 'Lịch sự kiện' },
@@ -32,7 +33,6 @@ export default function Sidebar() {
     { path: 'dich-vu', icon: <Gift size={26} />, label: 'Dịch vụ' },
     { path: 'hoa-don', icon: <ReceiptLong sx={{ width: '28px', height: '28px'}}/>, label: 'Hóa đơn' },
     { path: 'bao-cao', icon: <ChartArea size={26} />, label: 'Báo cáo', roles: ['Admin'] },
-    { path: 'xac-nhan-tai-khoan', icon: <Settings size={26} />, label: 'Xác nhận tài khoản', roles: ['Admin'] },
   ];
 
   const menuItems = rawMenuItems.filter(item =>

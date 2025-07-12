@@ -36,7 +36,9 @@ const LoginPage: React.FC = () => {
 
     useEffect(() => {
         if (role) {
-            navigate("/sanh-tiec");
+            if (role == 'NhanVien')
+                navigate("/sanh-tiec");
+            else navigate("/cap-quyen");
         }
     }, [role]);
 
@@ -60,7 +62,9 @@ const LoginPage: React.FC = () => {
                     localStorage.setItem('username', data.username);
                     localStorage.setItem('role', data.role); // Đảm bảo lưu role
                     login(data.role);
-                    navigate('/sanh-tiec'); // ✅ Chuyển hướng ngay lập tức
+                    if (role == 'NhanVien')
+                        navigate("/sanh-tiec");
+                    else navigate("/cap-quyen"); // ✅ Chuyển hướng ngay lập tức
                 } else {
                     console.error('Lỗi đăng nhập:', data.message);
                     setPasswordError(data.message || 'Sai tài khoản hoặc mật khẩu');

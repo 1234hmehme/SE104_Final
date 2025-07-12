@@ -12,7 +12,7 @@ exports.create = async (data) => {
   data.MATIEC = newMaTiec;
   if (!data.TRANGTHAI) data.TRANGTHAI = 'Đã đặt cọc';
 
-  const newTiec = await new Tieccuoi(data).save();
+  await new Tieccuoi(data).save();
 
   if (foods.length > 0) {
     const records = foods.map(f => ({ MATIEC: newMaTiec, MAMONAN: f.foodId, GIATIEN: f.price, GHICHU: f.note || '' }));
@@ -26,7 +26,7 @@ exports.create = async (data) => {
   const tienBan = foods.reduce((sum, f) => sum + f.price, 0);
   const tienDichVu = services.reduce((sum, s) => sum + s.price * s.quantity, 0);
 
-  await new Hoadon({
+  const newHoadon = await new Hoadon({
     MATIEC: newMaTiec,
     SOTIENHOADON: data.TIENCOC,
     TIENPHAT: 0,
@@ -38,7 +38,7 @@ exports.create = async (data) => {
   await baocaoServices.updateMonthlyReport(data.NGAYDAI);
   await baocaoServices.updateChiTietBaoCao(data.NGAYDAI);
 
-  return newTiec;
+  return newHoadon;
 };
 
 exports.getAll = async () => {
@@ -87,20 +87,19 @@ exports.pay = async (id) => {
   
   const hoaDonDatCoc = await Hoadon.findOne({ MATIEC: tiec.MATIEC });
 
-  const newHoadon = new Hoadon({
+  const newHoadon = await new Hoadon({
     MATIEC: tiec.MATIEC,
     SOTIENHOADON: total,
     TIENPHAT: penalty,
     TIENBAN: hoaDonDatCoc.TIENBAN,
     TIENDICHVU: hoaDonDatCoc.TIENDICHVU,
     LOAIHOADON: 'Thanh toán'
-  });
-  await newHoadon.save();
+  }).save();
 
   await baocaoServices.updateMonthlyReport(tiec.NGAYDAI);
   await baocaoServices.updateChiTietBaoCao(tiec.NGAYDAI);
 
-  return { message: 'Đã thanh toán thành công', TONGTIEN: total };
+  return newHoadon;
 };
 
 exports.cancel = async (id) => {

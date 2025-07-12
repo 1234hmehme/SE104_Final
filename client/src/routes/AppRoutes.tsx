@@ -50,19 +50,20 @@ export default function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route
-          path="/xac-nhan-tai-khoan"
-          element={
-            <ProtectedRoute allow="Admin">
-              <AccountApproval />
-            </ProtectedRoute>
-          }
-        />
+        path="/cap-quyen"
+        element={
+          <ProtectedRoute allow="Admin">
+            <AccountApproval />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="*"
         element={
           role
-            ? <Navigate to="/sanh-tiec" replace />
+            ? role == 'NhanVien' ? <Navigate to="/sanh-tiec" replace />
+              : <Navigate to="/cap-quyen" replace />
             : <Navigate to="/login" replace />
         }
       />

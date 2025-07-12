@@ -46,7 +46,7 @@ export default function PartyPage() {
     const [isBillFormOpen, setIsBillFormOpen] = useState(false);
     const [isReadOnlyForm, setIsReadOnlyForm] = useState(false);
     const [editData, setEditData] = useState<IParty | null>(null);
-    const [billPartyData, setBillPartyData] = useState<IParty | null>(null);
+    const [billId, setBillId] = useState<string>("");
 
     const [isDeleteConfirmOpen, setIsDeleteConfirmOpen] = useState(false);
     const [deleteId, setDeleteId] = useState(null);
@@ -468,8 +468,7 @@ export default function PartyPage() {
             <BillForm
                 open={isBillFormOpen}
                 onClose={() => setIsBillFormOpen(false)}
-                initialData={billPartyData}
-                readOnly={true}
+                billId={billId}
             />
 
             <ConfirmDelete
@@ -527,11 +526,11 @@ export default function PartyPage() {
                     if (!editData) return;
 
                     try {
-                        await tieccuoiApi.pay(editData.id);
+                        const billRes = await tieccuoiApi.pay(editData.id);
+                        setBillId(billRes._id);
                         setSuccessMessage('Thanh toán thành công');
                         setOpenSnackbar(true);
                         await fetchParties(); // load lại danh sách
-                        setBillPartyData(editData);
                         setIsPartyFormOpen(false);
                         setIsBillFormOpen(true);
                     } catch (err) {

@@ -269,10 +269,10 @@ export default function PartyForm({
                             {new Date(form.date) < new Date() &&
                                 <Box>
                                     <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
-                                        Đã trễ hạn: {daysLate} ngày
+                                        Đã trễ hạn: {(daysLate - 1)} ngày
                                     </Typography>
                                     <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
-                                        Tiền phạt: {penalty.toLocaleString()} VND ({daysLate}%)
+                                        Tiền phạt: {penalty.toLocaleString()} VND ({daysLate - 1}%)
                                     </Typography>
                                     <Typography sx={{ fontSize: '18px', fontWeight: 'bold', color: 'red' }}>
                                         Tổng cần thanh toán: {(form.deposit * 9 + penalty).toLocaleString()} VND

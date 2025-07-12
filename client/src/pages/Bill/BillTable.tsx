@@ -24,7 +24,7 @@ export default function BillTable({
 }: {
     data: IBill[],
     searchKey: string,
-    handleRead: (party: any) => void,
+    handleRead: (billId: string) => void,
 }) {
     const [order, setOrder] = useState<'asc' | 'desc'>('asc');
     const [orderBy, setOrderBy] = useState<BillKey>('id');
@@ -337,7 +337,7 @@ export default function BillTable({
                                     }}
                                 >
                                     <IconButton size="small" sx={{ color: '#00b69b' }}
-                                        onClick={() => handleRead(bill)}>
+                                        onClick={() => handleRead(bill.id)}>
                                         <Eye fontSize="small" />
                                     </IconButton>
                                 </TableCell>

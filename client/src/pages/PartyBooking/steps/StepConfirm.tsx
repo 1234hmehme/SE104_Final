@@ -6,6 +6,7 @@ import { IServiceBooking } from "../../../interfaces/service.interface";
 import { useEffect, useState } from "react";
 import { Alert, Snackbar } from "@mui/material";
 import tieccuoiApi from "../../../apis/tieccuoiApi";
+import BillForm from "../../../components/Form/BillForm";
 
 export default function StepConfirm() {
     const { watch, getValues, reset } = useFormContext();
@@ -19,6 +20,8 @@ export default function StepConfirm() {
     const totalTablesPrice = totalTables * tablePrice;
     const servicesPrice = selectedServices.reduce((sum, item) => sum + (item.price * item.quantity), 0);
     const totalBill = totalTablesPrice + servicesPrice;
+    const [billId, setBillId] = useState<string>("");
+    const [isBillFormOpen, setIsBillFormOpen] = useState(false);
 
     const [successMessage, setSuccessMessage] = useState('');
     const [openSnackbar, setOpenSnackbar] = useState(false);
@@ -44,11 +47,13 @@ export default function StepConfirm() {
                 services: data.services,
             };
 
-            await tieccuoiApi.create(payload);
+            const billRes = await tieccuoiApi.create(payload);
+            setBillId(billRes._id);
             setSuccess(true);
             reset();
             setSuccessMessage('Đặt tiệc thành công');
             setOpenSnackbar(true);
+            setIsBillFormOpen(true);
         } catch (err) {
             console.error("Lỗi khi đặt tiệc:", err);
             setSuccessMessage('Đặt tiệc thất bại, vui lòng thử lại.');
@@ -98,7 +103,7 @@ export default function StepConfirm() {
                 },
             }}
         >
-            
+
             <Typography sx={{
                 fontWeight: 'bold',
                 fontSize: '20px',
@@ -256,6 +261,12 @@ export default function StepConfirm() {
                     Đặt tiệc thành công!
                 </Typography>
             )}
+
+            <BillForm
+                open={isBillFormOpen}
+                onClose={() => setIsBillFormOpen(false)}
+                billId={billId}
+            />
 
             <Snackbar open={openSnackbar} anchorOrigin={{ vertical: 'top', horizontal: 'center', }}>
                 <Alert severity={success ? 'success' : 'error'} sx={{ width: '100%', borderRadius: '10px' }}>

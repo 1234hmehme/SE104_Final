@@ -1,6 +1,8 @@
 const Hoadon = require('../models/Hoadon');
 const Tieccuoi = require('../models/Tieccuoi');
 const Chitietbaocao = require('../models/Chitietbaocao');
+const chitietMonanServices = require('./chitietmonanServices');
+const chitietDichvuServices = require('./chitietdichvuServices');
 
 exports.getAll = async () => {
     const hoadons = await Hoadon.aggregate([
@@ -33,13 +35,24 @@ exports.getAll = async () => {
     ]);
 
     return hoadons;
+};
 
-    /*const result = hoadons.map(hoadon => ({
-        ...hoadon,
-        TENCR: hoadon.MATIEC?.TENCR,
-        TENCD: hoadon.MATIEC.TENCD,
-    }));
-    return result;*/
+exports.getDetailById = async (hoadonId) => {
+    const hoadon = await Hoadon.findById(hoadonId);
+    if (!hoadon) throw new Error('Không tìm thấy hóa đơn');
+
+    const tiec = await Tieccuoi.findOne({ MATIEC: hoadon.MATIEC });
+    if (!tiec) throw new Error('Không tìm thấy tiệc cưới');
+
+    const monAn = await chitietMonanServices.getAllByParty(hoadon.MATIEC);
+    const dichVu = await chitietDichvuServices.getAllByParty(hoadon.MATIEC);
+
+    return {
+        hoadon,
+        tiec,
+        monAn,
+        dichVu,
+    };
 };
 
 exports.create = async (data) => {

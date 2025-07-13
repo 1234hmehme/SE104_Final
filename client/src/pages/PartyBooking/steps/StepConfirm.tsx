@@ -249,9 +249,16 @@ export default function StepConfirm() {
             <Box sx={{ display: "flex", justifyContent: "center", width: "100%", mt: 2 }}>
                 <Button
                     variant="contained"
-                    color="primary"
                     onClick={handleCreateParty}
                     disabled={loading}
+                    sx={{
+                        backgroundColor: '#4880FF',
+                        textTransform: 'none',
+                        padding: '8px 32px',
+                        borderRadius: '10px',
+                        fontWeight: 'bold',
+                        fontSize: '16px'
+                    }}                    
                 >
                     {loading ? "Đang đặt..." : "Đặt tiệc"}
                 </Button>

@@ -6,7 +6,6 @@ import StepFood from "./steps/StepFood";
 import StepService from "./steps/StepService";
 import StepConfirm from "./steps/StepConfirm";
 import { useFormContext } from "react-hook-form";
-import { useNavigate } from "react-router-dom";
 import { IFoodBooking } from "../../interfaces/food.interface";
 
 const steps = [
@@ -20,8 +19,7 @@ const steps = [
 export default function PartyStepper() {
   const [activeStep, setActiveStep] = useState(0);
   const methods = useFormContext();
-  const { trigger, handleSubmit, getValues, setError, clearErrors } = methods;
-  const navigate = useNavigate();
+  const { trigger, getValues, setError, clearErrors } = methods;
 
   const handleNext = async () => {
     // Validate các trường của step hiện tại trước khi next
@@ -95,16 +93,6 @@ export default function PartyStepper() {
   };
 
   const handleBack = () => setActiveStep((prev) => prev - 1);
-
-  // Hàm submit cuối cùng
-  const onSubmit = async (data: any) => {
-    await fetch("http://localhost:3000/api/tieccuoi", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(data),
-    });
-    navigate("/tiec-cuoi");
-  };
 
   const renderStep = () => {
     switch (activeStep) {
@@ -188,7 +176,7 @@ export default function PartyStepper() {
           >
             Quay lại
           </Button>
-          {activeStep < steps.length - 1 ? (
+          {activeStep < steps.length - 1 && (
             <Button
               variant="contained"
               onClick={handleNext}
@@ -201,21 +189,6 @@ export default function PartyStepper() {
               }}
             >
               Tiếp theo
-            </Button>
-          ) : (
-            <Button
-            type="submit"
-              variant="contained"
-              sx={{
-                fontSize: "14px",
-                fontWeight: "bold",
-                borderRadius: '8px',
-                backgroundColor: "#4880FF",
-                textTransform: "none",
-              }}
-              onClick={handleSubmit(onSubmit)}
-            >
-              Xác nhận
             </Button>
           )}
         </Box>

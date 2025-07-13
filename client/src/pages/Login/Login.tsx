@@ -38,7 +38,7 @@ const LoginPage: React.FC = () => {
         if (role) {
             if (role == 'NhanVien')
                 navigate("/sanh-tiec");
-            else navigate("/cap-quyen");
+            else navigate("/tai-khoan");
         }
     }, [role]);
 
@@ -64,7 +64,7 @@ const LoginPage: React.FC = () => {
                     login(data.role);
                     if (role == 'NhanVien')
                         navigate("/sanh-tiec");
-                    else navigate("/cap-quyen"); // ✅ Chuyển hướng ngay lập tức
+                    else navigate("/tai-khoan"); // ✅ Chuyển hướng ngay lập tức
                 } else {
                     console.error('Lỗi đăng nhập:', data.message);
                     setPasswordError(data.message || 'Sai tài khoản hoặc mật khẩu');

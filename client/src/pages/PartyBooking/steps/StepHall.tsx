@@ -208,19 +208,19 @@ export default function StepHall() {
                                             </Box>
                                         </CardContent>
                                     </Card>
-                                )) : 
-                                <Box
-                                    sx={{
-                                        gridColumn: '1 / -1',   // chiếm hết từ cột đầu đến cột cuối
-                                        display: 'flex',
-                                        justifyContent: 'center',
-                                        alignItems: 'center',
-                                    }}
-                                >
-                                    <Typography color="gray">
-                                        Không còn sảnh trống
-                                    </Typography>
-                                </Box>
+                                )) :
+                                    <Box
+                                        sx={{
+                                            gridColumn: '1 / -1',   // chiếm hết từ cột đầu đến cột cuối
+                                            display: 'flex',
+                                            justifyContent: 'center',
+                                            alignItems: 'center',
+                                        }}
+                                    >
+                                        <Typography color="gray">
+                                            Không còn sảnh trống
+                                        </Typography>
+                                    </Box>
                                 }
                             </Box>
                         </Box>
@@ -277,7 +277,12 @@ export default function StepHall() {
                                     },
                                 }}
                                 {...field}
-                                onChange={(e) => field.onChange(Number(e.target.value))}
+                                onChange={(e) => {
+                                    const val = Number(e.target.value);
+                                    if (val >= 0) {
+                                        field.onChange(val)
+                                    }
+                                }}
                             />
                         </Box>
                     )}
@@ -310,7 +315,12 @@ export default function StepHall() {
                                     },
                                 }}
                                 {...field}
-                                onChange={(e) => field.onChange(Number(e.target.value))}
+                                onChange={(e) => {
+                                    const val = Number(e.target.value);
+                                    if (val >= 0) {
+                                        field.onChange(val)
+                                    }
+                                }}
                             />
                         </Box>
                     )}

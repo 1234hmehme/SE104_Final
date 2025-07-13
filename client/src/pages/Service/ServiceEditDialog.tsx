@@ -100,7 +100,14 @@ const ServiceEditDialog: React.FC<ServiceEditDialogProps> = ({ open, onClose, se
                 }}>
                     <TextField label="Tên dịch vụ" name="name" variant="outlined" fullWidth value={form.name} onChange={handleChange} />
                     <TextField label="Mô tả" name="description" variant="outlined" fullWidth value={form.description} onChange={handleChange} />
-                    <TextField label="Giá" name="price" variant="outlined" type="number" fullWidth value={form.price} onChange={handleChange} />
+                    <TextField label="Giá" name="price" variant="outlined" type="number" fullWidth value={form.price}
+                        onChange={(e) => {
+                            const val = Number(e.target.value);
+                            if (val >= 0) {
+                                handleChange(e)
+                            }
+                        }}
+                    />
                     <FormControl fullWidth>
                         <InputLabel>Danh mục</InputLabel>
                         <Select label="Danh mục" value={form.category} onChange={handleCategoryChange}>
@@ -138,7 +145,7 @@ const ServiceEditDialog: React.FC<ServiceEditDialogProps> = ({ open, onClose, se
                 </Button>
                 <Button
                     variant="contained"
-                    onClick={handleSave} disabled={loading || !form.name || !form.price || !form.category || !form.image}
+                    onClick={handleSave} disabled={loading || !form.name || Number(form.price) == 0 || !form.category || !form.image}
                     sx={{
                         fontSize: "14px",
                         fontWeight: "bold",

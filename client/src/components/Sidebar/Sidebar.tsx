@@ -25,7 +25,7 @@ export default function Sidebar() {
   const { role, logout } = useAuth();
 
   const rawMenuItems = [
-    { path: 'cap-quyen', icon: <UserCheck size={26} />, label: 'Cấp quyền', roles: ['Admin'] },
+    { path: 'tai-khoan', icon: <UserCheck size={26} />, label: 'Tài khoản', roles: ['Admin'] },
     { path: 'sanh-tiec', icon: <Landmark size={26} />, label: 'Sảnh tiệc' },
     { path: 'tiec-cuoi', icon: <Wine size={26} />, label: 'Tiệc cưới' },
     { path: 'lich-su-kien/tuan', icon: <Calendar size={26} />, label: 'Lịch sự kiện' },

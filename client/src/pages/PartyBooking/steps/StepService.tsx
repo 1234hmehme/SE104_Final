@@ -240,10 +240,14 @@ export default function StepService() {
 
                                     <TextField
                                         value={item.quantity}
-                                        onChange={(e) => handleChangeQuantity(item.serviceId, Number(e.target.value))}
+                                        onChange={(e) => {
+                                            const val = Number(e.target.value);
+                                            if (val >= 1) {
+                                                handleChangeQuantity(item.serviceId, val)
+                                            }
+                                        }}
                                         type="number"
                                         defaultValue={1}
-                                        inputProps={{ min: 1 }}
                                         sx={{
                                             width: '70px',
                                             "& fieldset": {

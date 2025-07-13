@@ -57,7 +57,11 @@ const ServiceAddDialog: React.FC<ServiceAddDialogProps> = ({ open, onClose, onSu
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth
+        <Dialog open={open} maxWidth="sm" fullWidth
+            onClose={() => {
+                setForm({ ...form, image: null });
+                onClose()
+            }}
             sx={{
                 '& .MuiPaper-root': {
                     padding: '26px 4px',
@@ -129,7 +133,11 @@ const ServiceAddDialog: React.FC<ServiceAddDialogProps> = ({ open, onClose, onSu
                 paddingBottom: '0px',
                 gap: '20px',
             }}>
-                <Button onClick={onClose}
+                <Button
+                    onClick={() => {
+                        setForm({ ...form, image: null });
+                        onClose()
+                    }}
                     sx={{
                         fontSize: "14px",
                         fontWeight: "bold",

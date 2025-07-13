@@ -58,9 +58,6 @@ const AddHallDialog: React.FC<AddHallDialogProps> = ({ open, onClose, onSuccess,
             }}
             maxWidth="sm"
             fullWidth
-            BackdropProps={{
-                style: { backdropFilter: 'blur(5px)' }
-            }}
             sx={{
                 '& .MuiPaper-root': {
                     padding: '26px 4px',

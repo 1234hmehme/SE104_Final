@@ -61,12 +61,12 @@ describe('CRUD /api/baocao', () => {
 
   // 3. Lấy toàn bộ báo cáo
   it('3. GET /api/baocao → trả về danh sách báo cáo', async () => {
-    await Baocao.create([
+    const newRpt =  await Baocao.create([
       { THANG: 6, NAM: 2025, DOANHTHU: 1000000 },
       { THANG: 7, NAM: 2025, DOANHTHU: 3000000 }
     ]);
 
-    const res = await request(app).get('/api/baocao');
+    const res = await request(app).get(`/api/baocao/${newRpt._id}`);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBe(2);

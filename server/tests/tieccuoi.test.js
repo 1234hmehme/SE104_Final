@@ -88,7 +88,12 @@ describe('💒 QUY TRÌNH ĐẶT TIỆC CƯỚI', () => {
       ]
     });
 
-    return { tiec: resTiec.body, tiencoc, tienBan, tienDV };
+ 
+    // vì POST trả về hóa đơn, lấy MATIEC từ đó
+    const matiec = resTiec.body.MATIEC;
+    // lookup Tieccuoi bằng MATIEC
+    const tiec = await Tieccuoi.findOne({ MATIEC: matiec }).lean();
+    return { tiec, tiencoc, tienBan, tienDV };
   };
 
   // 1️⃣ Đặt tiệc và tạo hóa đơn đặt cọc
@@ -105,7 +110,7 @@ describe('💒 QUY TRÌNH ĐẶT TIỆC CƯỚI', () => {
     const { tiec, tiencoc, tienBan, tienDV } = await setupTiec('2099-01-01');
     const resPay = await request(app).post(`/api/tieccuoi/${tiec._id}/pay`).send();
     expect(resPay.statusCode).toBe(200);
-    expect(resPay.body.TONGTIEN).toBe(tiencoc * 9);
+    expect(resPay.body.SOTIENHOADON).toBe(tiencoc * 9);
 
     const allBills = await Hoadon.find({ MATIEC: tiec.MATIEC });
     expect(allBills.length).toBe(2);
@@ -132,7 +137,7 @@ describe('💒 QUY TRÌNH ĐẶT TIỆC CƯỚI', () => {
 
     const payBill = await Hoadon.findOne({ MATIEC: tiec.MATIEC, LOAIHOADON: 'Thanh toán' });
 
-    expect(resPay.body.TONGTIEN).toBe(expectedTotal);
+    expect(resPay.body.SOTIENHOADON).toBe(expectedTotal);
     expect(payBill.TIENPHAT).toBe(penalty);
     expect(payBill.SOTIENHOADON).toBe(expectedTotal);
   });

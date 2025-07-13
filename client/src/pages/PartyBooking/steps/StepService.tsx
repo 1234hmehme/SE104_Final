@@ -7,32 +7,6 @@ import { Close } from "@mui/icons-material";
 import { IService, IServiceBooking } from "../../../interfaces/service.interface";
 import ServiceDetailMenu from "../../../components/Menu/ServiceDetailMenu";
 
-// Hàm gán ảnh theo tên dịch vụ (dùng link thực)
-function getServiceImage(name: string) {
-    const ten = name.toLowerCase();
-    if (ten.includes("trang trí sảnh")) return "https://nhahanghuonglieusunflower.com/wp-content/uploads/2023/06/Trang-tri-sanh-tiec-cuoi-1.jpg";
-    if (ten.includes("trang trí bàn")) return "https://cdn.tgdd.vn/2021/12/CookDishThumb/cach-trang-tri-ban-tiec-ngot-doc-dao-moi-la-ap-dung-duoc-cho-thumb-620x620.jpg";
-    if (ten.includes("trang trí lễ đường")) return "https://tse1.mm.bing.net/th/id/OIP.-puz0hvMSoSpr8ow03r1RwEyDM?rs=1&pid=ImgDetMain";
-    if (ten.includes("mc")) return "https://webdamcuoi.com/wp-content/uploads/2022/01/mc-dam-cuoi-1024x570.jpg";
-    if (ten.includes("ca sĩ")) return "https://tse2.mm.bing.net/th/id/OIP.RJBQRtjbja59537YUUsmegHaE7?rs=1&pid=ImgDetMain";
-    if (ten.includes("ban nhạc")) return "https://tse3.mm.bing.net/th/id/OIP.kM2F15lLcH9e4RdqCzMDnwHaE7?rs=1&pid=ImgDetMain";
-    if (ten.includes("quay phim")) return "https://tse4.mm.bing.net/th/id/OIP.gx2kWyON409-DaK5YOpORAHaEi?rs=1&pid=ImgDetMain";
-    if (ten.includes("chụp ảnh")) return "https://toplist.vn/images/800px/ah-studio-692689.jpg";
-    if (ten.includes("trang điểm")) return "https://th.bing.com/th/id/R.1b26497fc5b8d280cef2e540e1f58639?rik=NcCaAEts4QRg0Q&pid=ImgRaw&r=0";
-    if (ten.includes("làm tóc")) return "https://erocante.vn/wp-content/uploads/2021/01/kieu-toc-cho-co-dau-mat-dai.jpg";
-    if (ten.includes("áo dài")) return "https://th.bing.com/th/id/R.e1c951e3746adb79924709cf649c2f39?rik=xKA8HSRnShOAZg&pid=ImgRaw&r=0";
-    if (ten.includes("vest")) return "https://th.bing.com/th/id/R.d5124a32bd990d59da2ad88db0d581dc?rik=0R8AcCkW8Ypwww&pid=ImgRaw&r=0";
-    if (ten.includes("xe hoa")) return "https://tse3.mm.bing.net/th/id/OIP.YwPx-ViAOArJbQ6sXgoIBwHaEo?rs=1&pid=ImgDetMain";
-    if (ten.includes("xe đưa đón")) return "https://th.bing.com/th/id/R.e6abef4f975a33a350b55c4b81176466?rik=wPENk0iummvS7A&pid=ImgRaw&r=0";
-    if (ten.includes("thiệp cưới")) return "https://kalina.com.vn/wp-content/uploads/2022/04/nhung-mau-thiep-cuoi-dep-khong-the-bo-qua-trong-ngay-cuoi-25.jpg";
-    if (ten.includes("hộp quà")) return "https://tse3.mm.bing.net/th/id/OIP.4-Lx4G02W-_dZbPUFQcxqgHaHa?rs=1&pid=ImgDetMain";
-    if (ten.includes("bánh cưới")) return "https://product.hstatic.net/200000449489/product/i19__16__a49594884474402cae57254df15b50ee_master.jpg";
-    if (ten.includes("rượu vang")) return "https://vuanhabep.com.vn/wp-content/uploads/2022/07/ly-ruou-cuoi-1.jpg";
-    if (ten.includes("bảo vệ")) return "https://th.bing.com/th/id/OIP.SE6YLJpAN5o_asn62rKwxwHaE8?w=290&h=193&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3";
-    if (ten.includes("y tế")) return "https://th.bing.com/th/id/OIP.1XRMBkS2H0HoS5lK_o0Q2gHaEK?w=295&h=180&c=7&r=0&o=7&dpr=1.3&pid=1.7&rm=3";
-    return "https://via.placeholder.com/400x220?text=No+Image";
-}
-
 const NullService: IService = {
     _id: '',
     name: "",
@@ -50,7 +24,6 @@ export default function StepService() {
     const [selectedServices, setSelectedServices] = useState<IServiceBooking[]>(watch("services") || []);
     const [services, setServices] = useState<IService[]>([]);
 
-    // Lấy danh sách dịch vụ từ backend và gán ảnh minh họa bằng link thực
     useEffect(() => {
         fetch("http://localhost:3000/api/dichvu")
             .then(res => res.json())
@@ -59,7 +32,7 @@ export default function StepService() {
                 name: item.TENDICHVU,
                 description: item.GHICHU,
                 price: item.DONGIA,
-                image: getServiceImage(item.TENDICHVU),
+                image: item.HINHANH,
                 category: item.DANHMUC
             }))));
     }, []);

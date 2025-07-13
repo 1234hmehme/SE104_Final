@@ -9,45 +9,6 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import dayjs from "dayjs";
 import HallDetailMenu from "../../../components/Menu/HallDetailMenu";
 
-
-// Hàm gán ảnh minh họa dựa vào tên sảnh
-import hallA1Image from "../../../assets/ảnh 1.webp";
-import hallA2Image from "../../../assets/ảnh 2.webp";
-import hallA3Image from "../../../assets/ảnh 3.jpg";
-import hallB1Image from "../../../assets/ảnh 4.jpg";
-import hallB2Image from "../../../assets/ảnh 5.jpg";
-import hallB3Image from "../../../assets/ảnh 6.png";
-import hallC1Image from "../../../assets/ảnh 7.jpg";
-import hallC2Image from "../../../assets/ảnh 8.jpg";
-import hallC3Image from "../../../assets/ảnh 9.jpg";
-import hallD1Image from "../../../assets/ảnh 10.jpg";
-import hallD2Image from "../../../assets/ảnh 11.jpg";
-import hallD3Image from "../../../assets/ảnh 12.jpg";
-import hallE1Image from "../../../assets/ảnh 13.jpg";
-import hallE2Image from "../../../assets/ảnh 14.jpeg";
-import hallE3Image from "../../../assets/ảnh 15.jpg";
-import { IHall } from "../../../interfaces/hall.interface";
-
-function getHallImage(tenSanh: string) {
-    const ten = tenSanh.toLowerCase();
-    if (ten.includes("grand ballroom a1")) return hallA1Image;
-    if (ten.includes("crystal hall a2")) return hallA2Image;
-    if (ten.includes("diamond suite a3")) return hallA3Image;
-    if (ten.includes("pearl grand b1")) return hallB1Image;
-    if (ten.includes("b2")) return hallB2Image;
-    if (ten.includes("b3")) return hallB3Image;
-    if (ten.includes("c1")) return hallC1Image;
-    if (ten.includes("c2")) return hallC2Image;
-    if (ten.includes("c3")) return hallC3Image;
-    if (ten.includes("d1")) return hallD1Image;
-    if (ten.includes("d2")) return hallD2Image;
-    if (ten.includes("d3")) return hallD3Image;
-    if (ten.includes("e1")) return hallE1Image;
-    if (ten.includes("e2")) return hallE2Image;
-    if (ten.includes("e3")) return hallE3Image;
-    return "https://via.placeholder.com/400x220?text=No+Image";
-}
-
 const NullHall = {
     id: "",
     name: "",
@@ -59,12 +20,11 @@ const NullHall = {
 };
 
 export default function StepHall() {
-    const { watch, setValue, control, register, formState: { errors }, setError, clearErrors } = useFormContext();
+    const { watch, control, formState: { errors }, clearErrors } = useFormContext();
     const [searchKey, setSearchKey] = useState("");
     const [isDetailMenuOpen, setIsDetailMenuOpen] = useState(false);
     const [halls, setHalls] = useState<any[]>([]);
     const [bookedHallIds, setBookedHallIds] = useState<string[]>([]);
-
 
     const selectedDate = watch("date");
     const selectedShift = watch("shift");
@@ -81,7 +41,6 @@ export default function StepHall() {
                     const booked = list
                         .filter(x => dayjs(x.NGAYDAI).format("YYYY-MM-DD") === dayjs(selectedDate).format("YYYY-MM-DD") && x.CA === selectedShift)
                         .map(x => x.MASANH);
-
 
                     console.log(
                         `Booked halls on ${selectedDate} (${selectedShift}):`,
@@ -105,10 +64,9 @@ export default function StepHall() {
                 maxTable: item.SOLUONGBANTD,
                 minTablePrice: item.DONGIABANTT,
                 description: item.GHICHU,
-                image: getHallImage(item.TENSANH),
+                image: item.HINHANH,
             }))));
     }, []);
-
 
     const tables = Number(watch("tables") || 0);
     const reserveTables = Number(watch("reserveTables") || 0);
@@ -122,24 +80,18 @@ export default function StepHall() {
             && matchesTables;
     });
 
-
-        const availableHalls = selectedDate && selectedShift
-    ? filteredHalls.filter(hall => !bookedHallIds.includes(hall.id))
-    : filteredHalls;
+    const availableHalls = selectedDate && selectedShift
+        ? filteredHalls.filter(hall => !bookedHallIds.includes(hall.id))
+        : filteredHalls;
     // useEffect(() => {
     //     register("hall", { required: "Vui lòng chọn một sảnh" });
 
     // }, [register]);
 
-    const onSelectHall = (hall: IHall) => {
-        setValue("hall", hall, { shouldValidate: true });
-    };
-
     return (
         <Box sx={{
             display: 'flex', gap: '20px', height: '100%'
         }}>
-
             <Controller
                 name="hall"
                 control={control}
@@ -164,117 +116,112 @@ export default function StepHall() {
                                 padding: '3px'
                             }}>
                                 {availableHalls.length > 0 ? availableHalls.map(hall => (
-                                    
-                                        <Card
-                                            key={hall.id}
-                                            onClick={() => {
-                                               
-
-                                                    clearErrors("hall");
-                                                    field.onChange(hall);
-                                                }}
-
-                                            
+                                    <Card
+                                        key={hall.id}
+                                        onClick={() => {
+                                            clearErrors("hall");
+                                            field.onChange(hall);
+                                        }}
+                                        sx={{
+                                            borderRadius: 3,
+                                            cursor: "pointer",
+                                            border:
+                                                selectedHall?.id === hall.id
+                                                    ? "3px solid #4880FF"
+                                                    : "1px solid #ccc",
+                                            boxShadow: selectedHall?.id === hall.id ? 4 : 1,
+                                        }}
+                                    >
+                                        <CardMedia
+                                            component="img"
+                                            image={hall.image}
                                             sx={{
-                                                borderRadius: 3,
-                                                cursor: "pointer",
-                                                border:
-                                                    selectedHall?.id === hall.id
-                                                        ? "3px solid #4880FF"
-                                                        : "1px solid #ccc",
-                                                boxShadow: selectedHall?.id === hall.id ? 4 : 1,
+                                                width: '100%',
+                                                objectFit: 'cover',
+                                                height: 200,
                                             }}
-                                        >
-                                            <CardMedia
-                                                component="img"
-                                                image={hall.image}
-                                                sx={{
-                                                    width: '100%',
-                                                    objectFit: 'cover',
-                                                    height: 200,
-                                                }}
-                                            />
-                                            <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                                                <Box sx={{
-                                                    display: 'flex',
-                                                    justifyContent: 'space-between',
-                                                    alignItems: 'center',
-                                                }}>
-                                                    <Typography
-                                                        onClick={() => { setIsDetailMenuOpen(true) }}
-                                                        sx={{
-                                                            fontWeight: 'bold',
-                                                            fontSize: '18px',
-                                                            '&:hover': {
-                                                                color: '#4880FF',
-                                                            },
-                                                        }}
-                                                    >
-                                                        {hall.name}
-                                                    </Typography>
-
-                                                    <Box sx={{
-                                                        display: 'flex',
-                                                        width: '25px',
-                                                        height: '25px',
-                                                        justifyContent: 'center',
-                                                        alignItems: 'center',
-                                                        borderRadius: 2,
-                                                        backgroundColor: defaultBgColorMap[hall.type],
-                                                        color: defaultTextColorMap[hall.type],
+                                        />
+                                        <CardContent sx={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                            <Box sx={{
+                                                display: 'flex',
+                                                justifyContent: 'space-between',
+                                                alignItems: 'center',
+                                            }}>
+                                                <Typography
+                                                    onClick={() => { setIsDetailMenuOpen(true) }}
+                                                    sx={{
                                                         fontWeight: 'bold',
-                                                        zIndex: 100
-                                                    }}>
-                                                        {hall.type}
-                                                    </Box>
-                                                </Box>
-
-                                                <Typography sx={{
-                                                    display: "-webkit-box",
-                                                    WebkitBoxOrient: "vertical",
-                                                    overflow: 'hidden',
-                                                    WebkitLineClamp: 2,
-                                                    color: 'GrayText',
-                                                    fontSize: '14px',
-                                                    height: '45px',
-                                                }}>
-                                                    {hall.description}
+                                                        fontSize: '18px',
+                                                        '&:hover': {
+                                                            color: '#4880FF',
+                                                        },
+                                                    }}
+                                                >
+                                                    {hall.name}
                                                 </Typography>
 
                                                 <Box sx={{
                                                     display: 'flex',
-                                                    flexDirection: 'column',
+                                                    width: '25px',
+                                                    height: '25px',
+                                                    justifyContent: 'center',
+                                                    alignItems: 'center',
+                                                    borderRadius: 2,
+                                                    backgroundColor: defaultBgColorMap[hall.type],
+                                                    color: defaultTextColorMap[hall.type],
+                                                    fontWeight: 'bold',
+                                                    zIndex: 100
                                                 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <TableRestaurantIcon sx={{ fontSize: '1rem', mr: 0.5, }} />
-                                                        <Typography color="text.secondary" fontSize={14}>
-                                                            Tối đa: {hall.maxTable} bàn
-                                                        </Typography>
-                                                    </Box>
-
-                                                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                                                        <TableRestaurantIcon sx={{ fontSize: '1rem', mr: 0.5, }} />
-                                                        <Typography color="text.secondary" fontSize={14}>
-                                                            Đơn giá bàn tối thiểu: {hall.minTablePrice?.toLocaleString('vi-VN')} VND
-                                                        </Typography>
-                                                    </Box>
+                                                    {hall.type}
                                                 </Box>
-                                            </CardContent>
-                                        </Card>
-                                    )
-                                ):                      <Box
-        sx={{
-          gridColumn: '1 / -1',   // chiếm hết từ cột đầu đến cột cuối
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-        }}
-      >
-        <Typography color="gray">
-          Không còn sảnh trống
-        </Typography>
-      </Box>
-                            }
+                                            </Box>
+
+                                            <Typography sx={{
+                                                display: "-webkit-box",
+                                                WebkitBoxOrient: "vertical",
+                                                overflow: 'hidden',
+                                                WebkitLineClamp: 2,
+                                                color: 'GrayText',
+                                                fontSize: '14px',
+                                                height: '45px',
+                                            }}>
+                                                {hall.description}
+                                            </Typography>
+
+                                            <Box sx={{
+                                                display: 'flex',
+                                                flexDirection: 'column',
+                                            }}>
+                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                    <TableRestaurantIcon sx={{ fontSize: '1rem', mr: 0.5, }} />
+                                                    <Typography color="text.secondary" fontSize={14}>
+                                                        Tối đa: {hall.maxTable} bàn
+                                                    </Typography>
+                                                </Box>
+
+                                                <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                                    <TableRestaurantIcon sx={{ fontSize: '1rem', mr: 0.5, }} />
+                                                    <Typography color="text.secondary" fontSize={14}>
+                                                        Đơn giá bàn tối thiểu: {hall.minTablePrice?.toLocaleString('vi-VN')} VND
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
+                                        </CardContent>
+                                    </Card>
+                                )) : 
+                                <Box
+                                    sx={{
+                                        gridColumn: '1 / -1',   // chiếm hết từ cột đầu đến cột cuối
+                                        display: 'flex',
+                                        justifyContent: 'center',
+                                        alignItems: 'center',
+                                    }}
+                                >
+                                    <Typography color="gray">
+                                        Không còn sảnh trống
+                                    </Typography>
+                                </Box>
+                                }
                             </Box>
                         </Box>
                     ) : (
@@ -287,8 +234,6 @@ export default function StepHall() {
                         }}>
                             Vui lòng nhập thông tin
                         </Typography>
-
-
                     )
                 )}
             />
@@ -354,7 +299,6 @@ export default function StepHall() {
                             </Typography>
                             <TextField
                                 type="number"
-
                                 error={!!errors.reserveTables}
                                 sx={{
                                     width: '90px',
@@ -544,7 +488,6 @@ export default function StepHall() {
                     </Typography>
                 )}
             </Box>
-
 
             <HallDetailMenu
                 open={isDetailMenuOpen}

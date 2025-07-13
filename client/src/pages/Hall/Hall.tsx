@@ -385,7 +385,7 @@ export default function HallPage() {
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <AttachMoneyIcon sx={{ color: '#00b894' }} />
-                                        <Typography variant="body1">Giá bàn: <b>{selectedHall.DONGIABANTT.toLocaleString('vi-VN')} VNĐ</b></Typography>
+                                        <Typography variant="body1">Đơn giá bàn tối thiểu: <b>{selectedHall.DONGIABANTT.toLocaleString('vi-VN')} VNĐ</b></Typography>
                                     </Box>
                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                         <TableRestaurantIcon sx={{ color: '#ff9800' }} />

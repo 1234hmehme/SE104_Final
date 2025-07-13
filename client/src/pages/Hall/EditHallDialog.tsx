@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, TextField, FormControl, InputLabel, Select, MenuItem, Button, Box } from '@mui/material';
+import { Dialog, DialogTitle, DialogContent, TextField, FormControl, InputLabel, Select, MenuItem, Button, Box, DialogActions } from '@mui/material';
 import sanhApi from '../../apis/sanhApis';
 import ImageUploader from '../../components/ImageUploader';
 
@@ -68,66 +68,132 @@ const EditHallDialog: React.FC<EditHallDialogProps> = ({ open, onClose, hall, ha
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-            <DialogTitle>Sửa thông tin sảnh</DialogTitle>
-            <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <TextField
-                    label="Tên Sảnh"
-                    variant="outlined"
-                    fullWidth
-                    value={name}
-                    onChange={e => setName(e.target.value)}
-                />
-                <FormControl fullWidth>
-                    <InputLabel>Loại Sảnh</InputLabel>
-                    <Select
-                        label="Loại Sảnh"
-                        value={type}
-                        onChange={e => setType(e.target.value)}
-                    >
-                        {hallTypes.map((t) => (
-                            <MenuItem key={t} value={t}>{`Loại ${t}`}</MenuItem>
-                        ))}
-                    </Select>
-                </FormControl>
-                <TextField
-                    label="Số Lượng Bàn Tối Đa"
-                    variant="outlined"
-                    type="number"
-                    fullWidth
-                    value={maxTables}
-                    onChange={e => setMaxTables(e.target.value)}
-                />
-                <TextField
-                    label="Đơn Giá Bàn Tối Thiểu"
-                    variant="outlined"
-                    type="number"
-                    fullWidth
-                    value={price}
-                    onChange={e => setPrice(e.target.value)}
-                />
-                <TextField
-                    label="Ghi Chú"
-                    variant="outlined"
-                    multiline
-                    rows={4}
-                    fullWidth
-                    value={note}
-                    onChange={e => setNote(e.target.value)}
-                />
-                <ImageUploader
-                    initialImage={hall?.HINHANH}
-                    onImageSelect={(file) => setFile(file)}
-                />
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, mt: 2 }}>
-                    <Button onClick={onClose} color="secondary" disabled={loading}>
-                        Hủy
-                    </Button>
-                    <Button variant="contained" onClick={handleSave} disabled={loading || !name || !type || !maxTables || !price || !note}>
-                        {loading ? "Đang lưu..." : "Lưu"}
-                    </Button>
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth
+            sx={{
+                '& .MuiPaper-root': {
+                    padding: '26px 4px',
+                    borderRadius: '15px',
+                    maxWidth: '700px',
+                },
+                '& .MuiDialogContent-root': {
+                    padding: 0,
+                },
+                "& fieldset": {
+                    borderRadius: "10px",
+                },
+                "& .MuiInputBase-input": {
+                    padding: "15px 10px",
+                    fontSize: "16px",
+                    "&::placeholder": {
+                        color: "#a5bed4",
+                        opacity: 1,
+                    },
+                },
+            }}
+        >
+            <DialogTitle sx={{
+                padding: '8px 24px',
+                paddingTop: '0px',
+                fontWeight: 'bold',
+                textAlign: 'center',
+            }}>Sửa thông tin sảnh</DialogTitle>
+            <DialogContent>
+                <Box sx={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'center',
+                    gap: '20px',
+                    padding: '15px 24px'
+                }}>
+                    <TextField
+                        label="Tên Sảnh"
+                        variant="outlined"
+                        fullWidth
+                        value={name}
+                        onChange={e => setName(e.target.value)}
+                    />
+                    <FormControl fullWidth>
+                        <InputLabel>Loại Sảnh</InputLabel>
+                        <Select
+                            label="Loại Sảnh"
+                            value={type}
+                            onChange={e => setType(e.target.value)}
+                        >
+                            {hallTypes.map((t) => (
+                                <MenuItem key={t} value={t}>{`Loại ${t}`}</MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+                    <TextField
+                        label="Số Lượng Bàn Tối Đa"
+                        variant="outlined"
+                        type="number"
+                        fullWidth
+                        value={maxTables}
+                        onChange={(e) => {
+                            const val = Number(e.target.value);
+                            if (val >= 0) {
+                                setMaxTables(e.target.value);
+                            }
+                        }}
+                    />
+                    <TextField
+                        label="Đơn Giá Bàn Tối Thiểu"
+                        variant="outlined"
+                        type="number"
+                        fullWidth
+                        value={price}
+                        onChange={(e) => {
+                            const val = Number(e.target.value);
+                            if (val >= 0) {
+                                setPrice(e.target.value);
+                            }
+                        }}
+                    />
+                    <TextField
+                        label="Ghi Chú"
+                        variant="outlined"
+                        fullWidth
+                        value={note}
+                        onChange={e => setNote(e.target.value)}
+                    />
+                    <ImageUploader
+                        initialImage={hall?.HINHANH}
+                        onImageSelect={(file) => setFile(file)}
+                    />
                 </Box>
             </DialogContent>
+
+            <DialogActions sx={{
+                alignSelf: 'center',
+                paddingTop: '16px',
+                paddingBottom: '0px',
+                gap: '20px',
+            }}>
+                <Button onClick={onClose} disabled={loading}
+                    sx={{
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        borderRadius: '8px',
+                        textTransform: "none",
+                    }}
+                >
+                    Hủy
+                </Button>
+                <Button
+                    variant="contained"
+                    onClick={handleSave} disabled={loading || !name || !type || Number(maxTables) == 0 || Number(price) == 0 || !note}
+                    sx={{
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                        borderRadius: '8px',
+                        textTransform: "none",
+                        backgroundColor: '#4880FF'
+                    }}
+                >
+                    {loading ? "Đang lưu..." : "Lưu"}
+                </Button>
+            </DialogActions>
         </Dialog>
     );
 };

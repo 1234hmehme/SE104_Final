@@ -52,7 +52,10 @@ const AddHallDialog: React.FC<AddHallDialogProps> = ({ open, onClose, onSuccess,
     return (
         <Dialog
             open={open}
-            onClose={onClose}
+            onClose={() => {
+                setFile(null)
+                onClose()
+            }}
             maxWidth="sm"
             fullWidth
             BackdropProps={{
@@ -112,7 +115,7 @@ const AddHallDialog: React.FC<AddHallDialogProps> = ({ open, onClose, onSuccess,
                             }
                         }}
                     />
-                    <TextField label="Đơn giá" variant="outlined"
+                    <TextField label="Đơn Giá Bàn Tối Thiểu" variant="outlined"
                         type="number" fullWidth value={price}
                         onChange={(e) => {
                             const val = Number(e.target.value);
@@ -137,7 +140,10 @@ const AddHallDialog: React.FC<AddHallDialogProps> = ({ open, onClose, onSuccess,
                 paddingBottom: '0px',
                 gap: '20px',
             }}>
-                <Button onClick={onClose} disabled={loading}
+                <Button onClick={() => {
+                    setFile(null)
+                    onClose()
+                }} disabled={loading}
                     sx={{
                         fontSize: "14px",
                         fontWeight: "bold",
@@ -149,7 +155,7 @@ const AddHallDialog: React.FC<AddHallDialogProps> = ({ open, onClose, onSuccess,
                 </Button>
                 <Button
                     variant="contained"
-                    onClick={handleSave} disabled={loading || !name || !type || Number(maxTables) == 0 || Number(price) == 0 || !note}
+                    onClick={handleSave} disabled={loading || !name || !type || Number(maxTables) == 0 || Number(price) == 0 || !note || !file}
                     sx={{
                         fontSize: "14px",
                         fontWeight: "bold",

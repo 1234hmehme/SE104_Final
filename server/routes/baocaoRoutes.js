@@ -4,7 +4,7 @@ const baocaoController = require('../controllers/baocaoController');
 
 router.post('/', baocaoController.create);
 router.put('/:id', baocaoController.update);
-router.get('/:id', baocaoController.getAll);
+router.get('/', baocaoController.getAll);
 router.get('/getByThang/:thang/:nam', baocaoController.getByThang);
 router.delete('/:id', baocaoController.remove);
 

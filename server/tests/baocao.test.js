@@ -66,7 +66,7 @@ describe('CRUD /api/baocao', () => {
       { THANG: 7, NAM: 2025, DOANHTHU: 3000000 }
     ]);
 
-    const res = await request(app).get(`/api/baocao/${newRpt._id}`);
+    const res = await request(app).get(`/api/baocao/`);
     expect(res.statusCode).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBe(2);

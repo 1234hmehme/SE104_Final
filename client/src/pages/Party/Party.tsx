@@ -549,7 +549,7 @@ export default function PartyPage() {
                     if (!editData) return;
 
                     try {
-                        await tieccuoiApi.pay(editData.id);
+                        await tieccuoiApi.cancel(editData.id);
                         setSuccessMessage('Hủy tiệc thành công');
                         setOpenSnackbar(true);
                         await fetchParties(); // load lại danh sách
